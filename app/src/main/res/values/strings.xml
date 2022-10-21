@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Dot Star Pelé</string>
+    <string name="rate_head">Rate</string>
+    <string name="my_head">My names</string>
+    <string name="home_rate_button">Rate firstnames</string>
+    <string name="home_mine_button">My firstnames</string>
+    <string name="home_title">.* Pelé</string>
+</resources>
