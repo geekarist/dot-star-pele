@@ -77,8 +77,11 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
 
 data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
 
-enum class RatingUiModel(val text: String) {
-    Love("❤️"), Like("\uD83D\uDC4D"), Dislike("\uD83D\uDC4E"), Unknown("\uD83D\uDD32")
+enum class RatingUiModel(val text: String, val rank: Int) {
+    Love("❤️", 0),
+    Like("\uD83D\uDC4D", 1),
+    Dislike("\uD83D\uDC4E", 2),
+    Unknown("\uD83D\uDD32", 3),
 }
 
 @Composable

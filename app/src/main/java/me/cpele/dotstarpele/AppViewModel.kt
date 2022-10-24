@@ -65,11 +65,16 @@ class AppViewModel(context: Context) : ViewModel() {
 private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> =
     map { nameEntity ->
         val rating = when {
-            nameEntity.text.matches("^[a-g]".toRegex()) -> RatingUiModel.Love
-            nameEntity.text.matches("^[h-q]".toRegex()) -> RatingUiModel.Like
-            else -> RatingUiModel.Dislike
+            nameEntity.text.matches("^[Rr]o.*".toRegex()) -> RatingUiModel.Love
+            nameEntity.text.matches("^[Ss]i.*".toRegex()) -> RatingUiModel.Like
+            nameEntity.text.matches("^[Tt]a.*".toRegex()) -> RatingUiModel.Dislike
+            else -> RatingUiModel.Unknown
         }
         MyNameItemUiModel(firstName = nameEntity.text, rating)
+    }.sortedBy {
+        val note = it.rating.rank
+        val name = it.firstName
+        "$note-$name"
     }
 
 @Database(entities = [NameEntity::class], version = 1)
