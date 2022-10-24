@@ -65,9 +65,9 @@ class AppViewModel(context: Context) : ViewModel() {
 private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> =
     map { nameEntity ->
         val rating = when {
-            nameEntity.text.matches("^[Rr]o.*".toRegex()) -> RatingUiModel.Love
-            nameEntity.text.matches("^[Ss]i.*".toRegex()) -> RatingUiModel.Like
-            nameEntity.text.matches("^[Tt]a.*".toRegex()) -> RatingUiModel.Dislike
+            nameEntity.text.matches("^[Rr]obi.*".toRegex()) -> RatingUiModel.Love
+            nameEntity.text.matches("^[Ss]ic.*".toRegex()) -> RatingUiModel.Like
+            nameEntity.text.matches("^[Tt]an.*".toRegex()) -> RatingUiModel.Dislike
             else -> RatingUiModel.Unknown
         }
         MyNameItemUiModel(firstName = nameEntity.text, rating)

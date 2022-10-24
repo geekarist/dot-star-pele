@@ -81,7 +81,7 @@ enum class RatingUiModel(val text: String, val rank: Int) {
     Love("❤️", 0),
     Like("\uD83D\uDC4D", 1),
     Dislike("\uD83D\uDC4E", 2),
-    Unknown("\uD83D\uDD32", 3),
+    Unknown("❓", 3),
 }
 
 @Composable
