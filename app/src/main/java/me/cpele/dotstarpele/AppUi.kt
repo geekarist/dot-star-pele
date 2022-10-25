@@ -22,12 +22,15 @@ enum class RatingUiModel(val text: String, val rank: Int) {
     Love("❤️", 0), Like("\uD83D\uDC4D", 1), Dislike("\uD83D\uDC4E", 2), Unknown("❓", 3),
 }
 
-data class AppUiModel(val myNames: MyNamesUiModel, val screen: Screen = Screen.Home) :
-    Serializable {
+data class AppUiModel(
+    val myNames: MyNamesUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
+) : Serializable {
     enum class Screen {
         Home, Rate, My
     }
 }
+
+data class RateUiModel(val currentName: String = "Kevin")
 
 data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
 
@@ -41,14 +44,14 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.My))
         })
         AppUiModel.Screen.Rate -> Rate(
+            uim = appUim.rate,
             onClickBack = {
                 dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
             },
             onClickLove = { dispatch(AppViewModel.Event.Love) },
             onClickLike = { dispatch(AppViewModel.Event.Like) },
             onClickDislike = { dispatch(AppViewModel.Event.Dislike) },
-            onClickUnknown = { dispatch(AppViewModel.Event.Unknown) },
-        )
+        ) { dispatch(AppViewModel.Event.Unknown) }
         AppUiModel.Screen.My -> My(uim = appUim.myNames) {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         }
@@ -83,6 +86,7 @@ private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
 @Composable
 fun Rate(
     modifier: Modifier = Modifier,
+    uim: RateUiModel,
     onClickBack: () -> Unit,
     onClickLove: () -> Unit,
     onClickLike: () -> Unit,
@@ -103,31 +107,27 @@ fun Rate(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Kevin",
+                text = uim.currentName,
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickLove() }) {
                 Text(text = RatingUiModel.Love.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickLike() }) {
                 Text(text = RatingUiModel.Like.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickDislike() }) {
                 Text(text = RatingUiModel.Dislike.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickUnknown() }) {
                 Text(text = RatingUiModel.Unknown.text)
             }

@@ -16,7 +16,7 @@ import java.nio.charset.Charset
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
-    val uiModel = mutableStateOf(AppUiModel(MyNamesUiModel()))
+    val uiModel = mutableStateOf(AppUiModel(myNames = MyNamesUiModel(), rate = RateUiModel()))
 
     init {
         viewModelScope.launch {
