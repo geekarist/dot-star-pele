@@ -1,6 +1,8 @@
 package me.cpele.dotstarpele
 
+import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,16 +14,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 
-class AppViewModel(context: Context) : ViewModel() {
+class AppViewModel(private val application: Application) : ViewModel() {
 
     val uiModel = mutableStateOf(AppUiModel(MyNamesUiModel()))
 
     init {
         viewModelScope.launch {
             val newNames = withContext(Dispatchers.IO) {
-                val db = Room.databaseBuilder(context, AppDb::class.java, "app-db").build()
-                populateDatabase(context, db, R.raw.names_boys, GenderEntity.Boy)
-                populateDatabase(context, db, R.raw.names_girls, GenderEntity.Girl)
+                val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
+                populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
+                populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
 
                 db.namesDao().findAll().toUiModels()
             }
@@ -34,16 +36,12 @@ class AppViewModel(context: Context) : ViewModel() {
     }
 
     private fun populateDatabase(
-        context: Context,
-        db: AppDb,
-        @RawRes nameFileRes: Int,
-        genderEntity: GenderEntity
+        context: Context, db: AppDb, @RawRes nameFileRes: Int, genderEntity: GenderEntity
     ) {
         context.resources.openRawResource(nameFileRes).use { boyNamesInStream ->
             val reader = boyNamesInStream.reader(Charset.defaultCharset())
             reader.readLines()
-        }.filterNot { it.isBlank() }
-            .flatMap { it.split("""\s+""".toRegex()) }
+        }.filterNot { it.isBlank() }.flatMap { it.split("""\s+""".toRegex()) }
             .map { nameFromFile -> NameEntity(text = nameFromFile, gender = genderEntity) }
             .let { nameEntities ->
                 val namesDao = db.namesDao()
@@ -54,28 +52,40 @@ class AppViewModel(context: Context) : ViewModel() {
     fun dispatch(event: Event) {
         when (event) {
             is Event.Navigation -> uiModel.value = uiModel.value.copy(screen = event.screen)
+            Event.Love -> Toast.makeText(application, "TODO: you love it", Toast.LENGTH_SHORT)
+                .show()
+            Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
+                .show()
+            Event.Dislike -> Toast.makeText(
+                application, "TODO: you don't like it", Toast.LENGTH_SHORT
+            ).show()
+            Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
     sealed class Event {
         data class Navigation(val screen: AppUiModel.Screen) : Event()
+        object Love : Event()
+        object Like : Event()
+        object Dislike : Event()
+        object Unknown : Event()
     }
 }
 
-private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> =
-    map { nameEntity ->
-        val rating = when {
-            nameEntity.text.matches("^[Rr]obi.*".toRegex()) -> RatingUiModel.Love
-            nameEntity.text.matches("^[Ss]ic.*".toRegex()) -> RatingUiModel.Like
-            nameEntity.text.matches("^[Tt]an.*".toRegex()) -> RatingUiModel.Dislike
-            else -> RatingUiModel.Unknown
-        }
-        MyNameItemUiModel(firstName = nameEntity.text, rating)
-    }.sortedBy {
-        val note = it.rating.rank
-        val name = it.firstName
-        "$note-$name"
+private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameEntity ->
+    val rating = when {
+        nameEntity.text.matches("^[Rr]obi.*".toRegex()) -> RatingUiModel.Love
+        nameEntity.text.matches("^[Ss]ic.*".toRegex()) -> RatingUiModel.Like
+        nameEntity.text.matches("^[Tt]an.*".toRegex()) -> RatingUiModel.Dislike
+        else -> RatingUiModel.Unknown
     }
+    MyNameItemUiModel(firstName = nameEntity.text, rating)
+}.sortedBy {
+    val note = it.rating.rank
+    val name = it.firstName
+    "$note-$name"
+}
 
 @Database(entities = [NameEntity::class], version = 1)
 abstract class AppDb : RoomDatabase() {

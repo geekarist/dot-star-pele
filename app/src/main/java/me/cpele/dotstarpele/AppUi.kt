@@ -40,9 +40,15 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
         }, onClickMyNames = {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.My))
         })
-        AppUiModel.Screen.Rate -> Rate(onClickBack = {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
-        })
+        AppUiModel.Screen.Rate -> Rate(
+            onClickBack = {
+                dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
+            },
+            onClickLove = { dispatch(AppViewModel.Event.Love) },
+            onClickLike = { dispatch(AppViewModel.Event.Like) },
+            onClickDislike = { dispatch(AppViewModel.Event.Dislike) },
+            onClickUnknown = { dispatch(AppViewModel.Event.Unknown) },
+        )
         AppUiModel.Screen.My -> My(uim = appUim.myNames) {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         }
@@ -75,7 +81,14 @@ private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
 }
 
 @Composable
-fun Rate(modifier: Modifier = Modifier, onClickBack: () -> Unit) {
+fun Rate(
+    modifier: Modifier = Modifier,
+    onClickBack: () -> Unit,
+    onClickLove: () -> Unit,
+    onClickLike: () -> Unit,
+    onClickDislike: () -> Unit,
+    onClickUnknown: () -> Unit,
+) {
     Column(
         modifier = modifier.padding(16.dp)
     ) {
@@ -95,19 +108,27 @@ fun Rate(modifier: Modifier = Modifier, onClickBack: () -> Unit) {
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(32.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onClickLove() }) {
                 Text(text = RatingUiModel.Love.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onClickLike() }) {
                 Text(text = RatingUiModel.Like.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onClickDislike() }) {
                 Text(text = RatingUiModel.Dislike.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+            Button(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onClickUnknown() }) {
                 Text(text = RatingUiModel.Unknown.text)
             }
             Spacer(modifier = Modifier.height(96.dp))
