@@ -16,6 +16,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
+data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
+
+enum class RatingUiModel(val text: String, val rank: Int) {
+    Love("❤️", 0), Like("\uD83D\uDC4D", 1), Dislike("\uD83D\uDC4E", 2), Unknown("❓", 3),
+}
+
+data class AppUiModel(val myNames: MyNamesUiModel, val screen: Screen = Screen.Home) :
+    Serializable {
+    enum class Screen {
+        Home, Rate, My
+    }
+}
+
+data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
+
 @Composable
 fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
 
@@ -35,50 +50,28 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
 }
 
 @Composable
-fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Unit) {
-    Column(modifier = modifier.padding(16.dp)) {
-        BackHandler(onBack = onClickBack)
+private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.Top, modifier = Modifier.padding(16.dp)
+    ) {
         Text(
-            text = stringResource(id = R.string.my_head),
-            style = MaterialTheme.typography.headlineMedium
+            text = stringResource(R.string.home_title),
+            style = MaterialTheme.typography.headlineMedium,
         )
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(
+                space = 8.dp, alignment = Alignment.CenterVertically
+            ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val itemUiModels = uim.names
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(
-                    16.dp, alignment = Alignment.Top
-                )
-            ) {
-                itemsIndexed(itemUiModels) { _, itemUim ->
-                    Card {
-                        Row(Modifier.padding(16.dp)) {
-                            Text(
-                                text = itemUim.firstName,
-                                modifier = Modifier.fillMaxWidth(fraction = .75f)
-                            )
-                            Text(
-                                textAlign = TextAlign.Right,
-                                text = itemUim.rating.text,
-                                modifier = Modifier.fillMaxWidth(fraction = .75f)
-                            )
-                        }
-                    }
-                }
+            Button(onClick = onClickRateNames) {
+                Text(text = stringResource(R.string.home_rate_button))
             }
+            Button(onClick = onClickMyNames) {
+                Text(text = stringResource(R.string.home_mine_button))
+            }
+            Spacer(modifier = Modifier.height(96.dp))
         }
     }
-}
-
-data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
-
-enum class RatingUiModel(val text: String, val rank: Int) {
-    Love("❤️", 0), Like("\uD83D\uDC4D", 1), Dislike("\uD83D\uDC4E", 2), Unknown("❓", 3),
 }
 
 @Composable
@@ -122,36 +115,43 @@ fun Rate(modifier: Modifier = Modifier, onClickBack: () -> Unit) {
     }
 }
 
-data class AppUiModel(val myNames: MyNamesUiModel, val screen: Screen = Screen.Home) :
-    Serializable {
-    enum class Screen {
-        Home, Rate, My
-    }
-}
-
-data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
-
 @Composable
-private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.Top, modifier = Modifier.padding(16.dp)
-    ) {
+fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Unit) {
+    Column(modifier = modifier.padding(16.dp)) {
+        BackHandler(onBack = onClickBack)
         Text(
-            text = stringResource(R.string.home_title),
-            style = MaterialTheme.typography.headlineMedium,
+            text = stringResource(id = R.string.my_head),
+            style = MaterialTheme.typography.headlineMedium
         )
         Column(
-            modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(
-                space = 8.dp, alignment = Alignment.CenterVertically
-            ), horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
         ) {
-            Button(onClick = onClickRateNames) {
-                Text(text = stringResource(R.string.home_rate_button))
+            val itemUiModels = uim.names
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(
+                    16.dp, alignment = Alignment.Top
+                )
+            ) {
+                itemsIndexed(itemUiModels) { _, itemUim ->
+                    Card {
+                        Row(Modifier.padding(16.dp)) {
+                            Text(
+                                text = itemUim.firstName,
+                                modifier = Modifier.fillMaxWidth(fraction = .75f)
+                            )
+                            Text(
+                                textAlign = TextAlign.Right,
+                                text = itemUim.rating.text,
+                                modifier = Modifier.fillMaxWidth(fraction = .75f)
+                            )
+                        }
+                    }
+                }
             }
-            Button(onClick = onClickMyNames) {
-                Text(text = stringResource(R.string.home_mine_button))
-            }
-            Spacer(modifier = Modifier.height(96.dp))
         }
     }
 }
