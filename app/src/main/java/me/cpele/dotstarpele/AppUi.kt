@@ -78,10 +78,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
 data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
 
 enum class RatingUiModel(val text: String, val rank: Int) {
-    Love("❤️", 0),
-    Like("\uD83D\uDC4D", 1),
-    Dislike("\uD83D\uDC4E", 2),
-    Unknown("❓", 3),
+    Love("❤️", 0), Like("\uD83D\uDC4D", 1), Dislike("\uD83D\uDC4E", 2), Unknown("❓", 3),
 }
 
 @Composable
@@ -112,6 +109,7 @@ fun Rate(modifier: Modifier = Modifier, onClickBack: () -> Unit) {
             Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
                 Text(text = RatingUiModel.Dislike.text)
             }
+            Spacer(modifier = Modifier.height(96.dp))
         }
     }
 }
@@ -140,11 +138,16 @@ private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
             ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = onClickRateNames) {
-                Text(stringResource(R.string.home_rate_button))
+                Text(
+                    text = stringResource(R.string.home_rate_button)
+                )
             }
             Button(onClick = onClickMyNames) {
-                Text(stringResource(R.string.home_mine_button))
+                Text(
+                    text = stringResource(R.string.home_mine_button)
+                )
             }
+            Spacer(modifier = Modifier.height(96.dp))
         }
     }
 }
