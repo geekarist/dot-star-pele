@@ -103,11 +103,19 @@ fun Rate(modifier: Modifier = Modifier, onClickBack: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+                Text(text = RatingUiModel.Love.text)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
                 Text(text = RatingUiModel.Like.text)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
                 Text(text = RatingUiModel.Dislike.text)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {}) {
+                Text(text = RatingUiModel.Unknown.text)
             }
             Spacer(modifier = Modifier.height(96.dp))
         }
@@ -138,14 +146,10 @@ private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
             ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(onClick = onClickRateNames) {
-                Text(
-                    text = stringResource(R.string.home_rate_button)
-                )
+                Text(text = stringResource(R.string.home_rate_button))
             }
             Button(onClick = onClickMyNames) {
-                Text(
-                    text = stringResource(R.string.home_mine_button)
-                )
+                Text(text = stringResource(R.string.home_mine_button))
             }
             Spacer(modifier = Modifier.height(96.dp))
         }
