@@ -34,7 +34,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val currentAppUim = uiModel.value
             val currentMyNamesUim = currentAppUim.myNames
             val newMyNamesUim = currentMyNamesUim.copy(names = newNames)
-            val newAppUim = currentAppUim.copy(myNames = newMyNamesUim)
+            val newAppUim = currentAppUim.copy(
+                myNames = newMyNamesUim, rate = RateUiModel.Ready(
+                    currentName = newNames[0].firstName, ratedCount = 0, totalCount = newNames.size
+                )
+            )
             uiModel.value = newAppUim
         }
     }
