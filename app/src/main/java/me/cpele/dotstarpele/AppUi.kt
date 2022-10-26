@@ -30,7 +30,12 @@ data class AppUiModel(
     }
 }
 
-data class RateUiModel(val currentName: String, val ratedCount: Int, val totalCount: Int)
+sealed interface RateUiModel {
+    object Loading : RateUiModel
+    data class Ready(
+        val currentName: String, val ratedCount: Int, val totalCount: Int
+    ) : RateUiModel
+}
 
 data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
 
@@ -101,39 +106,46 @@ fun Rate(
             text = stringResource(R.string.rate_head),
             style = MaterialTheme.typography.headlineMedium,
         )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = uim.currentName,
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(stringResource(R.string.rate_count_ratings, uim.ratedCount, uim.totalCount))
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { onClickLove() }) {
-                Text(text = RatingUiModel.Love.text)
+        when (uim) {
+            is RateUiModel.Loading -> Text(text = "Loading names...")
+            is RateUiModel.Ready -> Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = uim.currentName,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    stringResource(
+                        R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
+                    )
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = { onClickLove() }) {
+                    Text(text = RatingUiModel.Love.text)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = { onClickLike() }) {
+                    Text(text = RatingUiModel.Like.text)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = { onClickDislike() }) {
+                    Text(text = RatingUiModel.Dislike.text)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = { onClickUnknown() }) {
+                    Text(text = RatingUiModel.Unknown.text)
+                }
+                Spacer(modifier = Modifier.height(96.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { onClickLike() }) {
-                Text(text = RatingUiModel.Like.text)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { onClickDislike() }) {
-                Text(text = RatingUiModel.Dislike.text)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { onClickUnknown() }) {
-                Text(text = RatingUiModel.Unknown.text)
-            }
-            Spacer(modifier = Modifier.height(96.dp))
         }
     }
 }

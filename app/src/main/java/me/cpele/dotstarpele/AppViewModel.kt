@@ -18,9 +18,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     val uiModel = mutableStateOf(
         AppUiModel(
-            myNames = MyNamesUiModel(), rate = RateUiModel(
-                currentName = "Kevin", ratedCount = 19, totalCount = 284
-            )
+            myNames = MyNamesUiModel(), rate = RateUiModel.Loading
         )
     )
 
