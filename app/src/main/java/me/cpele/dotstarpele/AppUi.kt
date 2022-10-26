@@ -112,7 +112,7 @@ fun Rate(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("#14 of 10205")
+            Text(stringResource(R.string.rate_count_ratings, 8, 120))
             Spacer(modifier = Modifier.height(32.dp))
             Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickLove() }) {
