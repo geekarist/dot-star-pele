@@ -30,7 +30,7 @@ data class AppUiModel(
     }
 }
 
-data class RateUiModel(val currentName: String = "Kevin")
+data class RateUiModel(val currentName: String, val ratedCount: Int, val totalCount: Int)
 
 data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
 
@@ -112,7 +112,7 @@ fun Rate(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text(stringResource(R.string.rate_count_ratings, 8, 120))
+            Text(stringResource(R.string.rate_count_ratings, uim.ratedCount, uim.totalCount))
             Spacer(modifier = Modifier.height(32.dp))
             Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = { onClickLove() }) {
