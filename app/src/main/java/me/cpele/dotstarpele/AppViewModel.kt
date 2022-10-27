@@ -13,8 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
+import kotlin.reflect.safeCast
 
 class AppViewModel(private val application: Application) : ViewModel() {
+
+    private lateinit var db: AppDb
 
     val uiModel = mutableStateOf(
         AppUiModel(
@@ -24,8 +27,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     init {
         viewModelScope.launch {
+            db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
+
             val newNames = withContext(Dispatchers.IO) {
-                val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
                 populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
                 populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
 
@@ -64,9 +68,15 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 .show()
             Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
                 .show()
-            Event.Dislike -> Toast.makeText(
-                application, "TODO: you don't like it", Toast.LENGTH_SHORT
-            ).show()
+            Event.Dislike -> {
+                val rateUim = RateUiModel.Ready::class.safeCast(uiModel.value.rate)
+                    ?: throw IllegalStateException(
+                        "UI model should be ${RateUiModel::class.simpleName} but is: $uiModel.value.rate"
+                    )
+                val entity = db.namesDao().findByText(rateUim.currentName)
+                Toast.makeText(application, "TODO: store $entity rating (like)", Toast.LENGTH_SHORT)
+                    .show()
+            }
             Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
                 .show()
         }
@@ -107,6 +117,9 @@ interface NameDao {
 
     @Insert(onConflict = REPLACE)
     fun insertAll(names: List<NameEntity>)
+
+    @Query("SELECT * FROM name WHERE text = :text")
+    fun findByText(text: String): NameEntity
 }
 
 @Entity(tableName = "name", primaryKeys = ["text", "gender"])
