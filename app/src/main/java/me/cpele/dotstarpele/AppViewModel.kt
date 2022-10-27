@@ -73,9 +73,15 @@ class AppViewModel(private val application: Application) : ViewModel() {
                     ?: throw IllegalStateException(
                         "UI model should be ${RateUiModel::class.simpleName} but is: $uiModel.value.rate"
                     )
-                val entity = db.namesDao().findByText(rateUim.currentName)
-                Toast.makeText(application, "TODO: store $entity rating (like)", Toast.LENGTH_SHORT)
-                    .show()
+                viewModelScope.launch(Dispatchers.IO) {
+                    val entity = db.namesDao().findByText(rateUim.currentName)
+                    Toast.makeText(
+                        application,
+                        "TODO: store $entity rating (like)",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
             }
             Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
                 .show()
