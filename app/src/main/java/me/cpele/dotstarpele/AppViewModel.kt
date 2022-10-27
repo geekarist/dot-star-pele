@@ -75,12 +75,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
                     )
                 viewModelScope.launch(Dispatchers.IO) {
                     val entity = db.namesDao().findByText(rateUim.currentName)
-                    Toast.makeText(
-                        application,
-                        "TODO: store $entity rating (like)",
-                        Toast.LENGTH_SHORT
-                    )
-                        .show()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            application, "TODO: store $entity rating (like)", Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
             Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
