@@ -87,11 +87,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 note = newNoteEntity, nameText = nameEntity.text, nameGender = nameEntity.gender
             )
             db.ratingDao().insert(newRatingEntity)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    application, "TODO: store $nameEntity rating (dislike)", Toast.LENGTH_SHORT
-                ).show()
-            }
         }
     }
 
