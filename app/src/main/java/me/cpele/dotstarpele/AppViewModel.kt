@@ -122,7 +122,7 @@ private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameE
     "$note-$name"
 }
 
-@Database(entities = [NameEntity::class, RatingEntity::class], version = 1)
+@Database(entities = [NameEntity::class, RatingEntity::class], version = 2)
 abstract class AppDb : RoomDatabase() {
     abstract fun nameDao(): NameDao
     abstract fun ratingDao(): RatingDao
