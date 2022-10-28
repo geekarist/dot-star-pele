@@ -33,7 +33,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
                 populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
 
-                db.namesDao().findAll().toUiModels()
+                db.nameDao().findAll().toUiModels()
             }
             val currentAppUim = uiModel.value
             val currentMyNamesUim = currentAppUim.myNames
@@ -56,7 +56,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }.filterNot { it.isBlank() }.flatMap { it.split("""\s+""".toRegex()) }
             .map { nameFromFile -> NameEntity(text = nameFromFile, gender = genderEntity) }
             .let { nameEntities ->
-                val namesDao = db.namesDao()
+                val namesDao = db.nameDao()
                 namesDao.insertAll(nameEntities)
             }
     }
@@ -68,22 +68,30 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 .show()
             Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
                 .show()
-            Event.Dislike -> {
-                val rateUim = RateUiModel.Ready::class.safeCast(uiModel.value.rate)
-                    ?: throw IllegalStateException(
-                        "UI model should be ${RateUiModel::class.simpleName} but is: $uiModel.value.rate"
-                    )
-                viewModelScope.launch(Dispatchers.IO) {
-                    val entity = db.namesDao().findByText(rateUim.currentName)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            application, "TODO: store $entity rating (like)", Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            Event.Dislike -> handleDislike()
             Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
                 .show()
+        }
+    }
+
+    private fun handleDislike() {
+        val rateUim =
+            RateUiModel.Ready::class.safeCast(uiModel.value.rate) ?: throw IllegalStateException(
+                "UI model should be ${RateUiModel::class.simpleName} but is: $uiModel.value.rate"
+            )
+        viewModelScope.launch(Dispatchers.IO) {
+            val nameEntity = db.nameDao().findByText(rateUim.currentName)
+            val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
+            val newNoteEntity = NoteEntity.Dislike
+            val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
+                note = newNoteEntity, nameText = nameEntity.text, nameGender = nameEntity.gender
+            )
+            db.ratingDao().insert(newRatingEntity)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    application, "TODO: store $nameEntity rating (dislike)", Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -94,6 +102,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
         object Dislike : Event()
         object Unknown : Event()
     }
+}
+
+enum class NoteEntity {
+    Dislike
 }
 
 private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameEntity ->
@@ -110,10 +122,34 @@ private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameE
     "$note-$name"
 }
 
-@Database(entities = [NameEntity::class], version = 1)
+@Database(entities = [NameEntity::class, RatingEntity::class], version = 1)
 abstract class AppDb : RoomDatabase() {
-    abstract fun namesDao(): NameDao
+    abstract fun nameDao(): NameDao
+    abstract fun ratingDao(): RatingDao
 }
+
+@Dao
+interface RatingDao {
+    @Query("SELECT * FROM rating WHERE nameText = :text AND nameGender = :gender")
+    fun findByName(text: String, gender: GenderEntity): RatingEntity?
+
+    @Insert
+    fun insert(newRating: RatingEntity?)
+}
+
+@Entity(
+    tableName = "rating", foreignKeys = [ForeignKey(
+        entity = NameEntity::class,
+        parentColumns = ["text", "gender"],
+        childColumns = ["nameText", "nameGender"]
+    )]
+)
+data class RatingEntity(
+    @PrimaryKey(autoGenerate = true) val key: Int = 0,
+    val note: NoteEntity,
+    val nameText: String,
+    val nameGender: GenderEntity
+)
 
 @Dao
 interface NameDao {
