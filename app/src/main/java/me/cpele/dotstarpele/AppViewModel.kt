@@ -130,7 +130,7 @@ interface RatingDao {
     @Query("SELECT * FROM rating WHERE nameText = :text AND nameGender = :gender")
     fun findByName(text: String, gender: GenderEntity): RatingEntity?
 
-    @Insert
+    @Insert(onConflict = REPLACE)
     fun insert(newRating: RatingEntity?)
 }
 
