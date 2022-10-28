@@ -123,9 +123,7 @@ private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameE
 }
 
 @Database(
-    entities = [NameEntity::class, RatingEntity::class],
-    version = 2,
-    autoMigrations = [AutoMigration(from = 1, to = 2)]
+    entities = [NameEntity::class, RatingEntity::class], version = 2, exportSchema = true
 )
 abstract class AppDb : RoomDatabase() {
     abstract fun nameDao(): NameDao
