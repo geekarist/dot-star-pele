@@ -4,12 +4,13 @@ import android.app.Application
 import android.content.Context
 import android.widget.Toast
 import androidx.annotation.RawRes
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
@@ -19,11 +20,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private lateinit var db: AppDb
 
-    val uiModel = mutableStateOf(
-        AppUiModel(
-            myNames = MyNamesUiModel(), rate = RateUiModel.Loading
-        )
-    )
+    private val myNamesUimFlow = MutableStateFlow(MyNamesUiModel())
+    private val rateUimFlow = MutableStateFlow<RateUiModel>(RateUiModel.Loading)
+    private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
+
+    val uiModelFlow =
+        combine(myNamesUimFlow, rateUimFlow, screenUimFlow) { myNamesUim, rateUim, screenUim ->
+            AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
+        }
 
     init {
         viewModelScope.launch {
@@ -37,7 +41,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
             val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
 
-            uiModel.value = updateAppUim(uiModel.value, nameUims)
+            myNamesUimFlow.value = myNamesUimFlow.value.copy(names = nameUims)
+
+            rateUimFlow.value = RateUiModel.Ready(
+                nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
+            )
         }
     }
 
@@ -57,7 +65,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     fun dispatch(event: Event) {
         when (event) {
-            is Event.Navigation -> uiModel.value = uiModel.value.copy(screen = event.screen)
+            is Event.Navigation -> screenUimFlow.value = event.screen
             Event.Love -> Toast.makeText(application, "TODO: you love it", Toast.LENGTH_SHORT)
                 .show()
             Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
@@ -70,8 +78,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private fun handleDislike() {
         val rateUim =
-            RateUiModel.Ready::class.safeCast(uiModel.value.rate) ?: throw IllegalStateException(
-                "UI model should be ${RateUiModel::class.simpleName} but is: $uiModel.value.rate"
+            RateUiModel.Ready::class.safeCast(rateUimFlow.value) ?: throw IllegalStateException(
+                "UI model should be ${RateUiModel::class.simpleName} but is: ${rateUimFlow.value}"
             )
         viewModelScope.launch(Dispatchers.IO) {
             val nameEntity = db.nameDao().findByText(rateUim.currentName)
@@ -109,19 +117,6 @@ private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameE
     val note = it.rating.rank
     val name = it.firstName
     "$note-$name"
-}
-
-private fun updateAppUim(
-    currentAppUim: AppUiModel,
-    nameUims: List<MyNameItemUiModel>
-): AppUiModel {
-    val currentMyNamesUim = currentAppUim.myNames
-    val newMyNamesUim = currentMyNamesUim.copy(names = nameUims)
-    return currentAppUim.copy(
-        myNames = newMyNamesUim, rate = RateUiModel.Ready(
-            currentName = nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
-        )
-    )
 }
 
 @Database(
