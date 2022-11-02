@@ -29,18 +29,20 @@ class AppViewModel(private val application: Application) : ViewModel() {
         viewModelScope.launch {
             db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
-            val newNames = withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {
                 populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
                 populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
-
-                db.nameDao().findAll().toUiModels()
             }
+
+            val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
+            val nameUims = withContext(Dispatchers.IO) { nameEntities.toUiModels() }
+
             val currentAppUim = uiModel.value
             val currentMyNamesUim = currentAppUim.myNames
-            val newMyNamesUim = currentMyNamesUim.copy(names = newNames)
+            val newMyNamesUim = currentMyNamesUim.copy(names = nameUims)
             val newAppUim = currentAppUim.copy(
                 myNames = newMyNamesUim, rate = RateUiModel.Ready(
-                    currentName = newNames[0].firstName, ratedCount = 0, totalCount = newNames.size
+                    currentName = nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
                 )
             )
             uiModel.value = newAppUim
