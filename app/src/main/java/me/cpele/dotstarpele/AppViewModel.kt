@@ -35,17 +35,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
             }
 
             val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
-            val nameUims = withContext(Dispatchers.IO) { nameEntities.toUiModels() }
+            val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
 
-            val currentAppUim = uiModel.value
-            val currentMyNamesUim = currentAppUim.myNames
-            val newMyNamesUim = currentMyNamesUim.copy(names = nameUims)
-            val newAppUim = currentAppUim.copy(
-                myNames = newMyNamesUim, rate = RateUiModel.Ready(
-                    currentName = nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
-                )
-            )
-            uiModel.value = newAppUim
+            uiModel.value = updateAppUim(uiModel.value, nameUims)
         }
     }
 
@@ -117,6 +109,19 @@ private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameE
     val note = it.rating.rank
     val name = it.firstName
     "$note-$name"
+}
+
+private fun updateAppUim(
+    currentAppUim: AppUiModel,
+    nameUims: List<MyNameItemUiModel>
+): AppUiModel {
+    val currentMyNamesUim = currentAppUim.myNames
+    val newMyNamesUim = currentMyNamesUim.copy(names = nameUims)
+    return currentAppUim.copy(
+        myNames = newMyNamesUim, rate = RateUiModel.Ready(
+            currentName = nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
+        )
+    )
 }
 
 @Database(
