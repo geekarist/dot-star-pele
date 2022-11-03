@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.widget.Toast
 import androidx.annotation.RawRes
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.*
@@ -11,6 +13,7 @@ import androidx.room.OnConflictStrategy.REPLACE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
@@ -24,7 +27,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val rateUimFlow = MutableStateFlow<RateUiModel>(RateUiModel.Loading)
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
-    val uiModelFlow =
+    private val uiModelFlow =
         combine(myNamesUimFlow, rateUimFlow, screenUimFlow) { myNamesUim, rateUim, screenUim ->
             AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
         }
@@ -41,7 +44,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
             val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
 
-            myNamesUimFlow.value = myNamesUimFlow.value.copy(names = nameUims)
+            myNamesUimFlow.getAndUpdate { it.copy(names = nameUims) }
 
             rateUimFlow.value = RateUiModel.Ready(
                 nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
@@ -91,6 +94,13 @@ class AppViewModel(private val application: Application) : ViewModel() {
             db.ratingDao().insert(newRatingEntity)
         }
     }
+
+    @Composable
+    fun collectUiModel() = uiModelFlow.collectAsState(
+        AppUiModel(
+            myNames = MyNamesUiModel(), rate = RateUiModel.Loading
+        )
+    )
 
     sealed class Event {
         data class Navigation(val screen: AppUiModel.Screen) : Event()

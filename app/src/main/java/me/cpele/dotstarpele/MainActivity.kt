@@ -21,12 +21,11 @@ class MainActivity : ComponentActivity() {
             DotStarPeleTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     val factory = viewModelFactory { initializer { AppViewModel(application) } }
                     val appViewModel: AppViewModel = viewModel(factory = factory)
-                    val appUiModel by appViewModel.uiModel
+                    val appUiModel by appViewModel.collectUiModel()
                     App(appUiModel, appViewModel::dispatch)
                 }
             }
