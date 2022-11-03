@@ -20,16 +20,17 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private lateinit var db: AppDb
 
-    private val myNamesUimFlow = MutableStateFlow(MyNamesUiModel())
+    private val myNamesUimFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+        .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
+        .flowOn(Dispatchers.Default)
 
     private val rateUimFlow = myNamesUimFlow.mapNotNull { myNamesUim ->
         myNamesUim.names.takeIf { it.isNotEmpty() }
-    }.filterNotNull()
-        .map { nameUims: List<MyNameItemUiModel> ->
-            RateUiModel.Ready(
-                nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
-            )
-        }
+    }.filterNotNull().map { nameUims: List<MyNameItemUiModel> ->
+        RateUiModel.Ready(
+            nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
+        )
+    }.flowOn(Dispatchers.Default)
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
@@ -46,11 +47,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
                 populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
             }
-
-            val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
-            val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
-
-            myNamesUimFlow.update { it.copy(names = nameUims) }
         }
     }
 
