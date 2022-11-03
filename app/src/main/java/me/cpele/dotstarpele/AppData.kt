@@ -1,6 +1,7 @@
 package me.cpele.dotstarpele
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
 enum class NoteEntity {
     Dislike
@@ -37,10 +38,16 @@ data class RatingEntity(
     val nameGender: GenderEntity
 )
 
+const val FIND_ALL_NAMES = "SELECT * FROM name"
+
 @Dao
 interface NameDao {
-    @Query("SELECT * FROM name")
+
+    @Query(FIND_ALL_NAMES)
     fun findAll(): List<NameEntity>
+
+    @Query(FIND_ALL_NAMES)
+    fun flowAll(): Flow<List<NameEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(names: List<NameEntity>)
