@@ -12,6 +12,7 @@ import androidx.room.Room
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,7 +24,13 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private lateinit var db: AppDb
 
     private val myNamesUimFlow = MutableStateFlow(MyNamesUiModel())
-    private val rateUimFlow = MutableStateFlow<RateUiModel>(RateUiModel.Loading)
+
+    private val rateUimFlow = myNamesUimFlow.map {
+        RateUiModel.Ready(
+            it.names[0].firstName, ratedCount = 0, totalCount = it.names.size
+        )
+    }
+
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
     private val uiModelFlow =
@@ -44,10 +51,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
 
             myNamesUimFlow.update { it.copy(names = nameUims) }
-
-            rateUimFlow.value = RateUiModel.Ready(
-                nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
-            )
         }
     }
 
@@ -79,12 +82,16 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleDislike() {
-        val rateUim =
-            RateUiModel.Ready::class.safeCast(rateUimFlow.value) ?: throw IllegalStateException(
-                "UI model should be ${RateUiModel::class.simpleName} but is: ${rateUimFlow.value}"
+        // handleDislike(rateUimFlow.value)
+    }
+
+    private fun handleDislike(rateUim: RateUiModel) {
+        val readyRateUim =
+            RateUiModel.Ready::class.safeCast(rateUim) ?: throw IllegalStateException(
+                "UI model should be ${RateUiModel::class.simpleName} but is: $rateUim"
             )
         viewModelScope.launch(Dispatchers.IO) {
-            val nameEntity = db.nameDao().findByText(rateUim.currentName)
+            val nameEntity = db.nameDao().findByText(readyRateUim.currentName)
             val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
             val newNoteEntity = NoteEntity.Dislike
             val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
@@ -92,6 +99,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             )
             db.ratingDao().insert(newRatingEntity)
         }
+
     }
 
     @Composable
