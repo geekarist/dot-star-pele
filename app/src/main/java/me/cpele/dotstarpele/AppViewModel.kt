@@ -13,7 +13,7 @@ import androidx.room.OnConflictStrategy.REPLACE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
@@ -44,7 +44,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val nameEntities = withContext(Dispatchers.IO) { db.nameDao().findAll() }
             val nameUims = withContext(Dispatchers.Default) { nameEntities.toUiModels() }
 
-            myNamesUimFlow.getAndUpdate { it.copy(names = nameUims) }
+            myNamesUimFlow.update { it.copy(names = nameUims) }
 
             rateUimFlow.value = RateUiModel.Ready(
                 nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
