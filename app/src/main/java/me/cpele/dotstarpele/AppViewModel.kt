@@ -10,10 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
@@ -25,11 +22,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val myNamesUimFlow = MutableStateFlow(MyNamesUiModel())
 
-    private val rateUimFlow = myNamesUimFlow.map {
-        RateUiModel.Ready(
-            it.names[0].firstName, ratedCount = 0, totalCount = it.names.size
-        )
-    }
+    private val rateUimFlow = myNamesUimFlow.mapNotNull { myNamesUim ->
+        myNamesUim.names.takeIf { it.isNotEmpty() }
+    }.filterNotNull()
+        .map { nameUims: List<MyNameItemUiModel> ->
+            RateUiModel.Ready(
+                nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
+            )
+        }
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
