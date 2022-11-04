@@ -49,6 +49,14 @@ interface NameDao {
     @Query(FIND_ALL_NAMES)
     fun flowAll(): Flow<List<NameEntity>>
 
+    @Query(
+        "SELECT name.* FROM name " +
+                "LEFT OUTER JOIN rating " +
+                "ON (name.text = rating.nameText AND name.gender = rating.nameGender)" +
+                "AND rating.note = :note"
+    )
+    fun flowByNote(note: NoteEntity?): Flow<List<NameEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(names: List<NameEntity>)
 

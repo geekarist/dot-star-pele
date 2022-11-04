@@ -21,24 +21,28 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
-    private val myNamesUimFlow =
-        nameEntitiesFlow.map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
-            .flowOn(Dispatchers.Default)
+    private val unratedNameEntitiesFlow = db.nameDao().flowByNote(null).flowOn(Dispatchers.IO)
 
-    private val rateUimFlow = nameEntitiesFlow.mapNotNull { nameEntities ->
-        nameEntities.takeIf { it.isNotEmpty() }
-    }.filterNotNull().map { nameEntities ->
-        val nameInReview = nameEntities[0]
-        val countNames = nameEntities.size
-        nameInReview to countNames
-    }.map { (nameInReview, countNames) ->
-        RateUiModel.Ready(
-            nameInReview.text,
-            ratedCount = 0,
-            totalCount = countNames,
-            currentNameTag = nameInReview.text to nameInReview.gender.name
-        )
-    }.flowOn(Dispatchers.Default)
+    private val myNamesUimFlow = nameEntitiesFlow
+        .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
+        .flowOn(Dispatchers.Default)
+
+    private val rateUimFlow = unratedNameEntitiesFlow
+        .mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
+        .filterNotNull()
+        .map { nameEntities ->
+            val nameInReview = nameEntities[0]
+            val countNames = nameEntities.size
+            nameInReview to countNames
+        }
+        .map { (nameInReview, countNames) ->
+            RateUiModel.Ready(
+                nameInReview.text,
+                ratedCount = 0,
+                totalCount = countNames,
+                currentNameTag = nameInReview.text to nameInReview.gender.name
+            )
+        }.flowOn(Dispatchers.Default)
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
