@@ -33,7 +33,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
         nameInReview to countNames
     }.map { (nameInReview, countNames) ->
         RateUiModel.Ready(
-            nameInReview.text, ratedCount = 0, totalCount = countNames
+            nameInReview.text,
+            ratedCount = 0,
+            totalCount = countNames,
+            currentNameTag = nameInReview.text to nameInReview.gender.name
         )
     }.flowOn(Dispatchers.Default)
 
@@ -74,17 +77,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 .show()
             Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
                 .show()
-            Event.Dislike -> handleDislike()
+            is Event.Dislike -> handleDislike(
+                nameText = event.nameText, nameGender = GenderEntity.valueOf(event.nameGenderText)
+            )
             Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
                 .show()
         }
     }
 
-    private fun handleDislike() {
-        // handleDislike(rateUimFlow.value)
-    }
-
-    @Suppress("unused") // TODO: refactor using flows
     private fun handleDislike(nameText: String, nameGender: GenderEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             val nameEntity = db.nameDao().findOne(nameText, nameGender)
@@ -109,7 +109,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         data class Navigation(val screen: AppUiModel.Screen) : Event()
         object Love : Event()
         object Like : Event()
-        object Dislike : Event()
+        data class Dislike(val nameText: String, val nameGenderText: String) : Event()
         object Unknown : Event()
     }
 }

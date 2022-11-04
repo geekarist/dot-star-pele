@@ -33,7 +33,10 @@ data class AppUiModel(
 sealed interface RateUiModel {
     object Loading : RateUiModel
     data class Ready(
-        val currentName: String, val ratedCount: Int, val totalCount: Int
+        val currentName: String,
+        val currentNameTag: Pair<String, String>,
+        val ratedCount: Int,
+        val totalCount: Int
     ) : RateUiModel
 }
 
@@ -55,7 +58,9 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
             },
             onClickLove = { dispatch(AppViewModel.Event.Love) },
             onClickLike = { dispatch(AppViewModel.Event.Like) },
-            onClickDislike = { dispatch(AppViewModel.Event.Dislike) },
+            onClickDislike = { nameText, nameGenderText ->
+                dispatch(AppViewModel.Event.Dislike(nameText, nameGenderText))
+            },
         ) { dispatch(AppViewModel.Event.Unknown) }
         AppUiModel.Screen.My -> My(uim = appUim.myNames) {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
@@ -95,7 +100,7 @@ fun Rate(
     onClickBack: () -> Unit,
     onClickLove: () -> Unit,
     onClickLike: () -> Unit,
-    onClickDislike: () -> Unit,
+    onClickDislike: (String, String) -> Unit,
     onClickUnknown: () -> Unit,
 ) {
     Column(
@@ -135,8 +140,10 @@ fun Rate(
                     Text(text = RatingUiModel.Like.text)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = { onClickDislike() }) {
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+                    val (key1, key2) = uim.currentNameTag
+                    onClickDislike(key1, key2)
+                }) {
                     Text(text = RatingUiModel.Dislike.text)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
