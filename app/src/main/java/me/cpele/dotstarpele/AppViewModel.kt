@@ -18,7 +18,7 @@ import kotlin.reflect.safeCast
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
-    private lateinit var db: AppDb
+    private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
     private val myNamesUimFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
         .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
@@ -41,8 +41,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
-
             withContext(Dispatchers.IO) {
                 populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
                 populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
