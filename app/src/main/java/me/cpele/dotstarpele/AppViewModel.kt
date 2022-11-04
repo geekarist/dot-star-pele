@@ -20,15 +20,21 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
-    private val myNamesUimFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
-        .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
-        .flowOn(Dispatchers.Default)
+    private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
-    private val rateUimFlow = myNamesUimFlow.mapNotNull { myNamesUim ->
-        myNamesUim.names.takeIf { it.isNotEmpty() }
-    }.filterNotNull().map { nameUims: List<MyNameItemUiModel> ->
+    private val myNamesUimFlow =
+        nameEntitiesFlow.map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
+            .flowOn(Dispatchers.Default)
+
+    private val rateUimFlow = nameEntitiesFlow.mapNotNull { nameEntities ->
+        nameEntities.takeIf { it.isNotEmpty() }
+    }.filterNotNull().map { nameEntities ->
+        val nameInReview = nameEntities[0]
+        val countNames = nameEntities.size
+        nameInReview to countNames
+    }.map { (nameInReview, countNames) ->
         RateUiModel.Ready(
-            nameUims[0].firstName, ratedCount = 0, totalCount = nameUims.size
+            nameInReview.text, ratedCount = 0, totalCount = countNames
         )
     }.flowOn(Dispatchers.Default)
 
@@ -79,6 +85,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         // handleDislike(rateUimFlow.value)
     }
 
+    @Suppress("unused") // TODO: refactor using flows
     private fun handleDislike(rateUim: RateUiModel) {
         val readyRateUim =
             RateUiModel.Ready::class.safeCast(rateUim) ?: throw IllegalStateException(
