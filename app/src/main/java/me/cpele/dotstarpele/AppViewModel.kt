@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
-import kotlin.reflect.safeCast
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
@@ -86,13 +85,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     @Suppress("unused") // TODO: refactor using flows
-    private fun handleDislike(rateUim: RateUiModel) {
-        val readyRateUim =
-            RateUiModel.Ready::class.safeCast(rateUim) ?: throw IllegalStateException(
-                "UI model should be ${RateUiModel::class.simpleName} but is: $rateUim"
-            )
+    private fun handleDislike(nameText: String, nameGender: GenderEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            val nameEntity = db.nameDao().findByText(readyRateUim.currentName)
+            val nameEntity = db.nameDao().findOne(nameText, nameGender)
             val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
             val newNoteEntity = NoteEntity.Dislike
             val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(

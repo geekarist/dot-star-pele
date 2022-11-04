@@ -54,6 +54,9 @@ interface NameDao {
 
     @Query("SELECT * FROM name WHERE text = :text")
     fun findByText(text: String): NameEntity
+
+    @Query("SELECT * FROM name WHERE text = :text AND gender = :gender")
+    fun findOne(text: String, gender: GenderEntity): NameEntity
 }
 
 @Entity(tableName = "name", primaryKeys = ["text", "gender"])
