@@ -13,15 +13,6 @@ enum class NoteEntity {
 abstract class AppDb : RoomDatabase() {
     abstract fun nameDao(): NameDao
     abstract fun ratingDao(): RatingDao
-    abstract fun ratedNameDao(): RatedNameDao
-}
-
-@Dao
-interface RatedNameDao {
-    @Query(
-        """SELECT * FROM rating JOIN name ON (rating.nameText = name.text AND rating.nameGender = name.gender) WHERE rating.note = :note"""
-    )
-    fun flowByNote(note: NoteEntity): RatedNameEntity
 }
 
 @Dao
@@ -31,8 +22,21 @@ interface RatingDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(newRating: RatingEntity?)
-
 }
+
+@Entity(
+    tableName = "rating", foreignKeys = [ForeignKey(
+        entity = NameEntity::class,
+        parentColumns = ["text", "gender"],
+        childColumns = ["nameText", "nameGender"]
+    )]
+)
+data class RatingEntity(
+    @PrimaryKey(autoGenerate = true) val key: Int = 0,
+    val note: NoteEntity,
+    val nameText: String,
+    val nameGender: GenderEntity
+)
 
 const val FIND_ALL_NAMES = "SELECT * FROM name"
 
@@ -57,22 +61,3 @@ interface NameDao {
 
 @Entity(tableName = "name", primaryKeys = ["text", "gender"])
 data class NameEntity(val text: String, val gender: GenderEntity)
-
-@Entity(
-    tableName = "rating", foreignKeys = [ForeignKey(
-        entity = NameEntity::class,
-        parentColumns = ["text", "gender"],
-        childColumns = ["nameText", "nameGender"]
-    )]
-)
-data class RatingEntity(
-    @PrimaryKey(autoGenerate = true) val key: Int = 0,
-    val note: NoteEntity,
-    val nameText: String,
-    val nameGender: GenderEntity
-)
-
-@Entity
-data class RatedNameEntity(
-    @Embedded val name: NameEntity, @Embedded val rating: RatingEntity
-)
