@@ -2,6 +2,7 @@ package me.cpele.dotstarpele
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable
@@ -21,7 +22,13 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
-    private val unratedNameEntitiesFlow = db.nameDao().flowByNote(null).flowOn(Dispatchers.IO)
+    private val unratedNameEntitiesFlow =
+        db.nameDao().flowByNote(null).flowOn(Dispatchers.IO).onEach {
+            Log.d(
+                this@AppViewModel::class.simpleName,
+                "Emitting ${it.size} unrated name entities: $it"
+            )
+        }
 
     private val myNamesUimFlow = nameEntitiesFlow
         .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
@@ -48,7 +55,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val uiModelFlow =
         combine(myNamesUimFlow, rateUimFlow, screenUimFlow) { myNamesUim, rateUim, screenUim ->
-            AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
+            AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim).also {
+                Log.d(this@AppViewModel::class.simpleName, "Emitting app UI model: $it")
+            }
         }
 
     init {
@@ -97,6 +106,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
                 note = newNoteEntity, nameText = nameEntity.text, nameGender = nameEntity.gender
             )
+            Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingEntity")
             db.ratingDao().insert(newRatingEntity)
         }
 

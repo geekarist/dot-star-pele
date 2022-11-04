@@ -21,7 +21,7 @@ interface RatingDao {
     fun findByName(text: String, gender: GenderEntity): RatingEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(newRating: RatingEntity?)
+    fun insert(newRating: RatingEntity)
 }
 
 @Entity(
