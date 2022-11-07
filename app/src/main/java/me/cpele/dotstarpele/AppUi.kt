@@ -44,9 +44,15 @@ sealed interface RateUiModel {
 
 data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
 
+inline fun logd(provideMsg: () -> String) {
+    val myObject = object : Any() {}
+    val tag = myObject.javaClass.name.replace("\\$.*$".toRegex(), "")
+    Log.d(tag, provideMsg())
+}
+
 @Composable
 fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
-
+    logd { "Recomposing UI model" }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(onClickRateNames = {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Rate))
