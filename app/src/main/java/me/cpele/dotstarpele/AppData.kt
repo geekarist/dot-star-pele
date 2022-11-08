@@ -36,7 +36,7 @@ interface NameRatingDao {
 }
 
 data class NameRatingEntity(
-    @Embedded val ratingEntity: RatingEntity, @Embedded val nameEntity: NameEntity
+    @Embedded val ratingEntity: RatingEntity?, @Embedded val nameEntity: NameEntity
 )
 
 @Entity(
@@ -65,7 +65,11 @@ interface NameDao {
     fun flowAll(): Flow<List<NameEntity>>
 
     @Query(
-        "SELECT * FROM name " + "LEFT OUTER JOIN rating " + "ON (name.text = rating.nameText AND name.gender = rating.nameGender) " + "WHERE rating.note IS NULL " + "OR rating.note = 'Unknown'"
+        "SELECT * FROM name "
+                + "LEFT OUTER JOIN rating "
+                + "ON (name.text = rating.nameText AND name.gender = rating.nameGender) "
+                + "WHERE rating.note IS NULL "
+                + "OR rating.note = 'Unknown'"
     )
     fun flowUnrated(): Flow<List<NameEntity>>
 
