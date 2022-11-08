@@ -28,9 +28,9 @@ interface RatingDao {
 @Dao
 interface NameRatingDao {
     @Query(
-        "SELECT * FROM rating " +
-                "LEFT OUTER JOIN name " +
-                "ON (nameText = name.text AND nameGender = name.gender)"
+        "SELECT * FROM name " +
+                "LEFT OUTER JOIN rating " +
+                "ON (text = rating.nameText AND gender = rating.nameGender)"
     )
     fun findAll(): Flow<List<NameRatingEntity>>
 }
