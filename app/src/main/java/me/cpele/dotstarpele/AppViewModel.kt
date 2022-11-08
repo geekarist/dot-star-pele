@@ -14,12 +14,18 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
+import kotlin.random.Random
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
-    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO)
+    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated()
+        .flowOn(Dispatchers.IO)
+        .map {
+            it.sortedBy { Random.nextInt() }
+        }
+        .flowOn(Dispatchers.Default)
 
     private val myNamesUimFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
