@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
-import kotlin.random.Random
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
@@ -23,7 +22,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val unratedNameEntitiesFlow = db.nameDao().flowUnrated()
         .flowOn(Dispatchers.IO)
         .map {
-            it.sortedBy { Random.nextInt() }
+            it.shuffled()
         }
         .flowOn(Dispatchers.Default)
 
