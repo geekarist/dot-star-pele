@@ -3,7 +3,6 @@ package me.cpele.dotstarpele
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,11 +19,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
-    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO).onEach {
-        Log.d(
-            this@AppViewModel::class.simpleName, "Emitting ${it.size} unrated name entities: $it"
-        )
-    }
+    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO)
 
     private val myNamesUimFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
@@ -36,29 +31,32 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
         .flowOn(Dispatchers.Default)
 
-    private val rateUimFlow =
-        unratedNameEntitiesFlow.mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
-            .filterNotNull().map { nameEntities ->
-                val nameInReview = nameEntities[0]
-                val countNames = nameEntities.size
-                nameInReview to countNames
-            }.map { (nameInReview, countNames) ->
-                RateUiModel.Ready(
-                    nameInReview.text,
-                    ratedCount = 0,
-                    totalCount = countNames,
-                    currentNameTag = nameInReview.text to nameInReview.gender.name
-                )
-            }.flowOn(Dispatchers.Default)
+    private val rateUimFlow = unratedNameEntitiesFlow
+        .mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
+        .filterNotNull().map { nameEntities ->
+            val nameInReview = nameEntities[0]
+            val countNames = nameEntities.size
+            nameInReview to countNames
+        }
+        .map { (nameEntity, unratedCount) ->
+            RateUiModel.Ready(
+                nameEntity.text,
+                ratedCount = 0,
+                totalCount = unratedCount,
+                currentNameTag = nameEntity.text to nameEntity.gender.name
+            )
+        }
+        .flowOn(Dispatchers.Default)
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
-    private val uiModelFlow =
-        combine(myNamesUimFlow, rateUimFlow, screenUimFlow) { myNamesUim, rateUim, screenUim ->
-            AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim).also {
-                Log.d(this@AppViewModel::class.simpleName, "Emitting app UI model: $it")
-            }
-        }
+    private val uiModelFlow = combine(
+        myNamesUimFlow,
+        rateUimFlow,
+        screenUimFlow
+    ) { myNamesUim, rateUim, screenUim ->
+        AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
+    }
 
     init {
         viewModelScope.launch {
@@ -70,14 +68,22 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun populateDatabase(
-        context: Context, db: AppDb, @RawRes nameFileRes: Int, genderEntity: GenderEntity
+        context: Context,
+        db: AppDb,
+        @RawRes nameFileRes: Int,
+        genderEntity: GenderEntity
     ) {
-        context.resources.openRawResource(nameFileRes).use { boyNamesInStream ->
-            val reader = boyNamesInStream.reader(Charset.defaultCharset())
-            reader.readLines()
-        }.filterNot { it.isBlank() }.flatMap { it.split("""\s+""".toRegex()) }
-            .map { nameFromFile -> NameEntity(text = nameFromFile, gender = genderEntity) }
-            .let { nameEntities ->
+        context.resources.openRawResource(nameFileRes)
+            .use { inputStream -> // Read file lines
+                val reader = inputStream.reader(Charset.defaultCharset())
+                reader.readLines()
+            }
+            .filterNot { it.isBlank() } // Filter blank lines
+            .flatMap { it.split("""\s+""".toRegex()) } // One name per word
+            .map { nameStr -> // Create entities
+                NameEntity(text = nameStr, gender = genderEntity)
+            }
+            .let { nameEntities -> // Insert entities
                 val namesDao = db.nameDao()
                 namesDao.insertAll(nameEntities)
             }
@@ -85,31 +91,38 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     fun dispatch(event: Event) {
         when (event) {
-            is Event.Navigation -> screenUimFlow.value = event.screen
-            Event.Love -> Toast.makeText(application, "TODO: you love it", Toast.LENGTH_SHORT)
-                .show()
-            Event.Like -> Toast.makeText(application, "TODO: you like it", Toast.LENGTH_SHORT)
-                .show()
-            is Event.Dislike -> handleDislike(
-                nameText = event.nameText, nameGender = GenderEntity.valueOf(event.nameGenderText)
-            )
-            Event.Unknown -> Toast.makeText(application, "TODO: you don't know", Toast.LENGTH_SHORT)
-                .show()
+            is Event.Navigation ->
+                screenUimFlow.value = event.screen
+            is Event.Review -> {
+                val newNoteEntity = when (event) {
+                    is Event.Review.Love -> NoteEntity.Love
+                    is Event.Review.Like -> NoteEntity.Like
+                    is Event.Review.Dislike -> NoteEntity.Dislike
+                    is Event.Review.Unknown -> NoteEntity.Unknown
+                }
+                handleReview(
+                    nameText = event.nameText,
+                    nameGender = GenderEntity.valueOf(event.nameGenderText),
+                    newNoteEntity = newNoteEntity
+                )
+            }
         }
     }
 
-    private fun handleDislike(nameText: String, nameGender: GenderEntity) {
+    private fun handleReview(
+        nameText: String,
+        nameGender: GenderEntity,
+        newNoteEntity: NoteEntity
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             val nameEntity = db.nameDao().findOne(nameText, nameGender)
             val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
-            val newNoteEntity = NoteEntity.Dislike
             val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
                 note = newNoteEntity, nameText = nameEntity.text, nameGender = nameEntity.gender
             )
             Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingEntity")
             db.ratingDao().insert(newRatingEntity)
         }
-
     }
 
     @Composable
@@ -119,12 +132,34 @@ class AppViewModel(private val application: Application) : ViewModel() {
         )
     )
 
-    sealed class Event {
-        data class Navigation(val screen: AppUiModel.Screen) : Event()
-        object Love : Event()
-        object Like : Event()
-        data class Dislike(val nameText: String, val nameGenderText: String) : Event()
-        object Unknown : Event()
+    sealed interface Event {
+
+        data class Navigation(val screen: AppUiModel.Screen) : Event
+
+        sealed interface Review : Event {
+            val nameText: String
+            val nameGenderText: String
+
+            data class Dislike(
+                override val nameText: String,
+                override val nameGenderText: String
+            ) : Review
+
+            data class Like(
+                override val nameText: String,
+                override val nameGenderText: String
+            ) : Review
+
+            data class Love(
+                override val nameText: String,
+                override val nameGenderText: String
+            ) : Review
+
+            data class Unknown(
+                override val nameText: String,
+                override val nameGenderText: String
+            ) : Review
+        }
     }
 }
 

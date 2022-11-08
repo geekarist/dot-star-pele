@@ -64,12 +64,39 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
             onClickBack = {
                 dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
             },
-            onClickLove = { dispatch(AppViewModel.Event.Love) },
-            onClickLike = { dispatch(AppViewModel.Event.Like) },
-            onClickDislike = { nameText, nameGenderText ->
-                dispatch(AppViewModel.Event.Dislike(nameText, nameGenderText))
+            onClickLove = { nameText, nameGenderText ->
+                dispatch(
+                    AppViewModel.Event.Review.Love(
+                        nameText = nameText,
+                        nameGenderText = nameGenderText
+                    )
+                )
             },
-        ) { dispatch(AppViewModel.Event.Unknown) }
+            onClickLike = { nameText, nameGenderText ->
+                dispatch(
+                    AppViewModel.Event.Review.Like(
+                        nameText = nameText,
+                        nameGenderText = nameGenderText
+                    )
+                )
+            },
+            onClickDislike = { nameText, nameGenderText ->
+                dispatch(
+                    AppViewModel.Event.Review.Dislike(
+                        nameText = nameText,
+                        nameGenderText = nameGenderText
+                    )
+                )
+            },
+            onClickUnknown = { nameText, nameGenderText ->
+                dispatch(
+                    AppViewModel.Event.Review.Unknown(
+                        nameText = nameText,
+                        nameGenderText = nameGenderText
+                    )
+                )
+            },
+        )
         AppUiModel.Screen.My -> My(uim = appUim.myNames) {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         }
@@ -106,10 +133,10 @@ fun Rate(
     modifier: Modifier = Modifier,
     uim: RateUiModel,
     onClickBack: () -> Unit,
-    onClickLove: () -> Unit,
-    onClickLike: () -> Unit,
+    onClickLove: (String, String) -> Unit,
+    onClickLike: (String, String) -> Unit,
     onClickDislike: (String, String) -> Unit,
-    onClickUnknown: () -> Unit,
+    onClickUnknown: (String, String) -> Unit,
 ) {
     SideEffect {
         Log.d("UI", "Recomposing with UI model: $uim")
@@ -142,12 +169,18 @@ fun Rate(
                 )
                 Spacer(modifier = Modifier.height(32.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = { onClickLove() }) {
+                    onClick = {
+                        val (key1, key2) = uim.currentNameTag
+                        onClickLove(key1, key2)
+                    }) {
                     Text(text = RatingUiModel.Love.text)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = { onClickLike() }) {
+                    onClick = {
+                        val (key1, key2) = uim.currentNameTag
+                        onClickLike(key1, key2)
+                    }) {
                     Text(text = RatingUiModel.Like.text)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -159,7 +192,10 @@ fun Rate(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = { onClickUnknown() }) {
+                    onClick = {
+                        val (key1, key2) = uim.currentNameTag
+                        onClickUnknown(key1, key2)
+                    }) {
                     Text(text = RatingUiModel.Unknown.text)
                 }
                 Spacer(modifier = Modifier.height(96.dp))
