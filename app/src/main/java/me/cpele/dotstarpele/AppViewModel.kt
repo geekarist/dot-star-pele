@@ -28,10 +28,15 @@ class AppViewModel(private val application: Application) : ViewModel() {
         )
     }
 
-    private val myNamesUimFlow =
-        db.nameRatingDao().findAll().flowOn(Dispatchers.IO).map { nameEntities ->
+    private val myNamesUimFlow = db.nameRatingDao().findAll()
+        .flowOn(Dispatchers.IO)
+        .map { nameEntities -> // Sort by rank
+            nameEntities.sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
+        }
+        .map { nameEntities -> // Convert to UI model
             MyNamesUiModel(names = nameEntities.toUiModels())
-        }.flowOn(Dispatchers.Default)
+        }
+        .flowOn(Dispatchers.Default)
 
     private val rateUimFlow =
         unratedNameEntitiesFlow.mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
@@ -125,7 +130,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 }
 
-// TODO: sort by rank
 private fun List<NameRatingEntity>.toUiModels(): List<MyNameItemUiModel> = map { it.toUiModel() }
 
 private fun NameRatingEntity.toUiModel(): MyNameItemUiModel =

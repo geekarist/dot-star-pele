@@ -3,8 +3,11 @@ package me.cpele.dotstarpele
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
-enum class NoteEntity {
-    Dislike, Like, Love, Unknown
+enum class NoteEntity(val rank: Int) {
+    Love(rank = 10),
+    Like(rank = 20),
+    Dislike(rank = 30),
+    Unknown(rank = 40),
 }
 
 @Database(

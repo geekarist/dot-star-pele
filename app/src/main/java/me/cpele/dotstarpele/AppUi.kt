@@ -20,8 +20,8 @@ import java.io.Serializable
 
 data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
 
-enum class RatingUiModel(val text: String, val rank: Int) {
-    Love("❤️", 0), Like("\uD83D\uDC4D", 1), Dislike("\uD83D\uDC4E", 2), Unknown("❓", 3),
+enum class RatingUiModel(val text: String) {
+    Love("❤️"), Like("\uD83D\uDC4D"), Dislike("\uD83D\uDC4E"), Unknown("❓"),
 }
 
 data class AppUiModel(
