@@ -31,7 +31,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val myNamesUimFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
         .map { nameEntities -> // Sort by rank
-            nameEntities.sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
+            nameEntities
+                .sortedBy { it.nameEntity.gender }
+                .sortedBy { it.nameEntity.text }
+                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
         }
         .map { nameEntities -> // Convert to UI model
             MyNamesUiModel(names = nameEntities.toUiModels())
