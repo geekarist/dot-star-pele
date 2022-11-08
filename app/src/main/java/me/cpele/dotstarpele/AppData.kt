@@ -50,10 +50,10 @@ interface NameDao {
     fun flowAll(): Flow<List<NameEntity>>
 
     @Query(
-        "SELECT name.* FROM name " +
+        "SELECT * FROM name " +
                 "LEFT OUTER JOIN rating " +
                 "ON (name.text = rating.nameText AND name.gender = rating.nameGender)" +
-                "AND rating.note = :note"
+                "WHERE rating.note = :note"
     )
     fun flowByNote(note: NoteEntity?): Flow<List<NameEntity>>
 
