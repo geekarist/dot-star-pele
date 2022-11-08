@@ -23,7 +23,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
     private val unratedNameEntitiesFlow =
-        db.nameDao().flowByNote(null).flowOn(Dispatchers.IO).onEach {
+        db.nameDao().flowUnrated().flowOn(Dispatchers.IO).onEach {
             Log.d(
                 this@AppViewModel::class.simpleName,
                 "Emitting ${it.size} unrated name entities: $it"

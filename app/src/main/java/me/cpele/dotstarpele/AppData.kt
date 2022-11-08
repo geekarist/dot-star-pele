@@ -52,10 +52,11 @@ interface NameDao {
     @Query(
         "SELECT * FROM name " +
                 "LEFT OUTER JOIN rating " +
-                "ON (name.text = rating.nameText AND name.gender = rating.nameGender)" +
-                "WHERE rating.note = :note"
+                "ON (name.text = rating.nameText AND name.gender = rating.nameGender) " +
+                "WHERE rating.note IS NULL " +
+                "OR rating.note = 'Unknown'"
     )
-    fun flowByNote(note: NoteEntity?): Flow<List<NameEntity>>
+    fun flowUnrated(): Flow<List<NameEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(names: List<NameEntity>)
