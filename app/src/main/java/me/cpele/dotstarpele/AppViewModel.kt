@@ -20,8 +20,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
-    private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
-
     private val unratedNameEntitiesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO).onEach {
         Log.d(
             this@AppViewModel::class.simpleName, "Emitting ${it.size} unrated name entities: $it"
