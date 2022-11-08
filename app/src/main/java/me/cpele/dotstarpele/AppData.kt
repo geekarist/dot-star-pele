@@ -4,7 +4,7 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 enum class NoteEntity {
-    Dislike
+    Dislike, Like, Love, Unknown
 }
 
 @Database(
@@ -13,6 +13,7 @@ enum class NoteEntity {
 abstract class AppDb : RoomDatabase() {
     abstract fun nameDao(): NameDao
     abstract fun ratingDao(): RatingDao
+    abstract fun nameRatingDao(): NameRatingDao
 }
 
 @Dao
@@ -23,6 +24,16 @@ interface RatingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(newRating: RatingEntity)
 }
+
+@Dao
+interface NameRatingDao {
+    @Query("SELECT * FROM rating JOIN name ON (nameText = name.text AND nameGender = name.gender)")
+    fun findAll(): Flow<List<NameRatingEntity>>
+}
+
+data class NameRatingEntity(
+    @Embedded val ratingEntity: RatingEntity, @Embedded val nameEntity: NameEntity
+)
 
 @Entity(
     tableName = "rating", foreignKeys = [ForeignKey(
@@ -50,11 +61,7 @@ interface NameDao {
     fun flowAll(): Flow<List<NameEntity>>
 
     @Query(
-        "SELECT * FROM name " +
-                "LEFT OUTER JOIN rating " +
-                "ON (name.text = rating.nameText AND name.gender = rating.nameGender) " +
-                "WHERE rating.note IS NULL " +
-                "OR rating.note = 'Unknown'"
+        "SELECT * FROM name " + "LEFT OUTER JOIN rating " + "ON (name.text = rating.nameText AND name.gender = rating.nameGender) " + "WHERE rating.note IS NULL " + "OR rating.note = 'Unknown'"
     )
     fun flowUnrated(): Flow<List<NameEntity>>
 

@@ -22,34 +22,31 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val nameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
-    private val unratedNameEntitiesFlow =
-        db.nameDao().flowUnrated().flowOn(Dispatchers.IO).onEach {
-            Log.d(
-                this@AppViewModel::class.simpleName,
-                "Emitting ${it.size} unrated name entities: $it"
-            )
-        }
+    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO).onEach {
+        Log.d(
+            this@AppViewModel::class.simpleName, "Emitting ${it.size} unrated name entities: $it"
+        )
+    }
 
-    private val myNamesUimFlow = nameEntitiesFlow
-        .map { nameEntities -> MyNamesUiModel(names = nameEntities.toUiModels()) }
-        .flowOn(Dispatchers.Default)
-
-    private val rateUimFlow = unratedNameEntitiesFlow
-        .mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
-        .filterNotNull()
-        .map { nameEntities ->
-            val nameInReview = nameEntities[0]
-            val countNames = nameEntities.size
-            nameInReview to countNames
-        }
-        .map { (nameInReview, countNames) ->
-            RateUiModel.Ready(
-                nameInReview.text,
-                ratedCount = 0,
-                totalCount = countNames,
-                currentNameTag = nameInReview.text to nameInReview.gender.name
-            )
+    private val myNamesUimFlow =
+        db.nameRatingDao().findAll().flowOn(Dispatchers.IO).map { nameEntities ->
+            MyNamesUiModel(names = nameEntities.toUiModels())
         }.flowOn(Dispatchers.Default)
+
+    private val rateUimFlow =
+        unratedNameEntitiesFlow.mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
+            .filterNotNull().map { nameEntities ->
+                val nameInReview = nameEntities[0]
+                val countNames = nameEntities.size
+                nameInReview to countNames
+            }.map { (nameInReview, countNames) ->
+                RateUiModel.Ready(
+                    nameInReview.text,
+                    ratedCount = 0,
+                    totalCount = countNames,
+                    currentNameTag = nameInReview.text to nameInReview.gender.name
+                )
+            }.flowOn(Dispatchers.Default)
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
@@ -128,17 +125,16 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 }
 
-private fun List<NameEntity>.toUiModels(): List<MyNameItemUiModel> = map { nameEntity ->
-    val rating = when {
-        nameEntity.text.matches("^[Rr]obi.*".toRegex()) -> RatingUiModel.Love
-        nameEntity.text.matches("^[Ss]ic.*".toRegex()) -> RatingUiModel.Like
-        nameEntity.text.matches("^[Tt]an.*".toRegex()) -> RatingUiModel.Dislike
-        else -> RatingUiModel.Unknown
-    }
-    MyNameItemUiModel(firstName = nameEntity.text, rating)
-}.sortedBy {
-    val note = it.rating.rank
-    val name = it.firstName
-    "$note-$name"
+// TODO: sort by rank
+private fun List<NameRatingEntity>.toUiModels(): List<MyNameItemUiModel> = map { it.toUiModel() }
+
+private fun NameRatingEntity.toUiModel(): MyNameItemUiModel =
+    MyNameItemUiModel(nameEntity.text, ratingEntity.note.toUiModel())
+
+private fun NoteEntity.toUiModel(): RatingUiModel = when (this) {
+    NoteEntity.Dislike -> RatingUiModel.Dislike
+    NoteEntity.Like -> RatingUiModel.Like
+    NoteEntity.Love -> RatingUiModel.Love
+    NoteEntity.Unknown -> RatingUiModel.Unknown
 }
 
