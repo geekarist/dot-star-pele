@@ -19,6 +19,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
+    private val allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+
     private val unratedNameEntitiesFlow = db.nameDao().flowUnrated()
         .flowOn(Dispatchers.IO)
         .map {
@@ -37,20 +39,33 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .flowOn(Dispatchers.Default)
 
     private val rateUimFlow = unratedNameEntitiesFlow
-        .mapNotNull { nameEntities -> nameEntities.takeIf { it.isNotEmpty() } }
-        .filterNotNull().map { nameEntities ->
-            val nameInReview = nameEntities[0]
-            val countNames = nameEntities.size
-            nameInReview to countNames
+        .combine(allNameEntitiesFlow) { unratedNameEntities, allNameEntities ->
+            unratedNameEntities to allNameEntities.size
         }
-        .map { (nameEntity, unratedCount) ->
-            RateUiModel.Ready(
-                nameEntity.text,
-                ratedCount = 0,
-                totalCount = unratedCount,
-                currentNameTag = nameEntity.text to nameEntity.gender.name
-            )
+        .mapNotNull { (nameEntities, countAll) ->
+            nameEntities.takeIf { it.isNotEmpty() } to countAll
         }
+        .filter { (unratedNameEntities, _) ->
+            unratedNameEntities != null
+        }
+        .map { (unratedNameEntities, countAll) ->
+            val nameEntity = unratedNameEntities?.getOrNull(0)
+            val countUnrated = unratedNameEntities?.size
+            Triple(nameEntity, countUnrated, countAll)
+        }
+        .map { (nameEntity, unratedCount, countAll) ->
+            if (nameEntity != null && unratedCount != null) {
+                RateUiModel.Ready(
+                    nameEntity.text,
+                    ratedCount = countAll - unratedCount,
+                    totalCount = countAll,
+                    currentNameTag = nameEntity.text to nameEntity.gender.name
+                )
+            } else {
+                null
+            }
+        }
+        .filterNotNull()
         .flowOn(Dispatchers.Default)
 
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
