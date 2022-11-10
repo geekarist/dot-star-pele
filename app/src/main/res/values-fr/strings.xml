@@ -6,5 +6,5 @@
     <string name="home_rate_button">Noter des prénoms</string>
     <string name="home_mine_button">Mes prénoms</string>
     <string name="home_title">.* Pelé</string>
-    <string name="rate_count_ratings">%1$sd notés sur %2$d</string>
+    <string name="rate_count_ratings">%1$d prénoms notés sur %2$d</string>
 </resources>
