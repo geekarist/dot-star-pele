@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Dot Star Pelé</string>
     <string name="rate_head">Rate</string>
-    <string name="my_head">My names</string>
+    <string name="my_head">My firstnames</string>
     <string name="home_rate_button">Rate firstnames</string>
     <string name="home_mine_button">My firstnames</string>
     <string name="home_title">.* Pelé</string>
-    <string name="rate_count_ratings">Rated %1$d of %2$d first names</string>
+    <string name="rate_count_ratings">Rated %1$d of %2$d firstnames</string>
 </resources>

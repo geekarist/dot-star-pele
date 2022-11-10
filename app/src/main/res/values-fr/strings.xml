@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rate_head">Noter</string>
+    <string name="app_name">Pelé Point Étoile</string>
+    <string name="my_head">Mes prénoms</string>
+    <string name="home_rate_button">Noter des prénoms</string>
+    <string name="home_mine_button">Mes prénoms</string>
+    <string name="home_title">.* Pelé</string>
+    <string name="rate_count_ratings">%1$sd notés sur %2$d</string>
+</resources>
