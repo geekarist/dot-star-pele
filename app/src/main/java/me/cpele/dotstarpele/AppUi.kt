@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -233,11 +235,15 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                         Row(Modifier.padding(16.dp)) {
                             if (Math.random() < .5) {
                                 Image(
+                                    colorFilter = ColorFilter.tint(Color.Magenta),
+                                    modifier = Modifier.padding(end = 8.dp),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_male),
                                     contentDescription = stringResource(id = R.string.my_male)
                                 )
                             } else {
                                 Image(
+                                    colorFilter = ColorFilter.tint(Color.Blue),
+                                    modifier = Modifier.padding(end = 8.dp),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_female),
                                     contentDescription = stringResource(id = R.string.my_female)
                                 )
