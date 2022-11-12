@@ -14,8 +14,10 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.io.Serializable
 
 data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
@@ -229,13 +231,24 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                     Card {
                         Row(Modifier.padding(16.dp)) {
                             Text(
+                                text = "♂",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 24.sp,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .padding(end = 8.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Text(
                                 text = itemUim.firstName,
-                                modifier = Modifier.fillMaxWidth(fraction = .75f)
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = .75f)
+                                    .align(Alignment.CenterVertically)
                             )
                             Text(
                                 textAlign = TextAlign.Right,
                                 text = itemUim.rating.text,
-                                modifier = Modifier.fillMaxWidth(fraction = .75f)
+                                modifier = Modifier.fillMaxWidth(fraction = .25f)
                             )
                         }
                     }
