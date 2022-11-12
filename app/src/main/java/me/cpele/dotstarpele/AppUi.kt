@@ -236,14 +236,18 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                             if (Math.random() < .5) {
                                 Image(
                                     colorFilter = ColorFilter.tint(Color.Magenta),
-                                    modifier = Modifier.padding(end = 8.dp),
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .wrapContentWidth(),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_male),
                                     contentDescription = stringResource(id = R.string.my_male)
                                 )
                             } else {
                                 Image(
                                     colorFilter = ColorFilter.tint(Color.Blue),
-                                    modifier = Modifier.padding(end = 8.dp),
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .wrapContentWidth(),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_female),
                                     contentDescription = stringResource(id = R.string.my_female)
                                 )
@@ -251,13 +255,13 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                             Text(
                                 text = itemUim.firstName,
                                 modifier = Modifier
-                                    .fillMaxWidth(fraction = .75f)
+                                    .fillParentMaxWidth()
                                     .align(Alignment.CenterVertically)
                             )
                             Text(
                                 textAlign = TextAlign.Right,
                                 text = itemUim.rating.text,
-                                modifier = Modifier.fillMaxWidth(fraction = .25f)
+                                modifier = Modifier.wrapContentWidth()
                             )
                         }
                     }
