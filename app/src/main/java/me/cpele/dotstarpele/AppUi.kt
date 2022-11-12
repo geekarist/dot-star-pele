@@ -238,7 +238,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                                     colorFilter = ColorFilter.tint(Color.Magenta),
                                     modifier = Modifier
                                         .padding(end = 8.dp)
-                                        .wrapContentWidth(),
+                                        .wrapContentWidth(unbounded = true),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_male),
                                     contentDescription = stringResource(id = R.string.my_male)
                                 )
@@ -247,7 +247,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                                     colorFilter = ColorFilter.tint(Color.Blue),
                                     modifier = Modifier
                                         .padding(end = 8.dp)
-                                        .wrapContentWidth(),
+                                        .wrapContentWidth(unbounded = true),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_female),
                                     contentDescription = stringResource(id = R.string.my_female)
                                 )
@@ -261,7 +261,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                             Text(
                                 textAlign = TextAlign.Right,
                                 text = itemUim.rating.text,
-                                modifier = Modifier.wrapContentWidth()
+                                modifier = Modifier.wrapContentWidth(unbounded = true)
                             )
                         }
                     }
