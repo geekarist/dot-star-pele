@@ -6,4 +6,6 @@
     <string name="home_mine_button">My firstnames</string>
     <string name="home_title">.* Pelé</string>
     <string name="rate_count_ratings">Rated %1$d of %2$d firstnames</string>
+    <string name="my_male">Boy</string>
+    <string name="my_female">Girl</string>
 </resources>
