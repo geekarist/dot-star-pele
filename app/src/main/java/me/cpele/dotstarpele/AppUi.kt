@@ -261,7 +261,9 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                             Text(
                                 textAlign = TextAlign.Right,
                                 text = itemUim.rating.text,
-                                modifier = Modifier.wrapContentWidth(unbounded = true)
+                                modifier = Modifier
+                                    .wrapContentWidth(unbounded = true)
+                                    .padding(horizontal = 16.dp)
                             )
                         }
                     }
