@@ -234,7 +234,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                         Row(Modifier.padding(16.dp)) {
                             if (Math.random() < .5) {
                                 Image(
-                                    colorFilter = ColorFilter.tint(Color.Magenta),
+                                    colorFilter = ColorFilter.tint(Color.Blue),
                                     modifier = Modifier
                                         .padding(end = 8.dp),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_male),
@@ -242,7 +242,7 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                                 )
                             } else {
                                 Image(
-                                    colorFilter = ColorFilter.tint(Color.Blue),
+                                    colorFilter = ColorFilter.tint(Color.Magenta),
                                     modifier = Modifier
                                         .padding(end = 8.dp),
                                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_female),
