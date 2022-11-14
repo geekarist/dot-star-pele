@@ -62,7 +62,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
                     nameEntity.text,
                     ratedCount = countAll - unratedCount,
                     totalCount = countAll,
-                    currentNameTag = nameEntity.text to nameEntity.gender.name
+                    currentNameTag = nameEntity.text to nameEntity.gender.name,
+                    gender = nameEntity.gender.toUiModel(),
                 )
             } else {
                 null

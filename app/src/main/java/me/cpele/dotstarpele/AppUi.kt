@@ -57,7 +57,8 @@ sealed interface RateUiModel {
         val currentName: String,
         val currentNameTag: Pair<String, String>,
         val ratedCount: Int,
-        val totalCount: Int
+        val totalCount: Int,
+        val gender: GenderUiModel,
     ) : RateUiModel
 }
 
@@ -175,6 +176,13 @@ fun Rate(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
+                Image(
+                    colorFilter = ColorFilter.tint(uim.gender.tint),
+                    modifier = Modifier
+                        .padding(end = 8.dp),
+                    imageVector = ImageVector.vectorResource(id = uim.gender.icon),
+                    contentDescription = stringResource(id = uim.gender.description)
+                )
                 Text(
                     text = uim.currentName,
                     style = MaterialTheme.typography.headlineLarge,
