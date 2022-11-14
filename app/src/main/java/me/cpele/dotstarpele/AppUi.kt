@@ -178,9 +178,10 @@ fun Rate(
             ) {
                 Image(
                     colorFilter = ColorFilter.tint(uim.gender.tint),
-                    modifier = Modifier
-                        .padding(end = 8.dp),
                     imageVector = ImageVector.vectorResource(id = uim.gender.icon),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(bottom = 8.dp),
                     contentDescription = stringResource(id = uim.gender.description)
                 )
                 Text(
