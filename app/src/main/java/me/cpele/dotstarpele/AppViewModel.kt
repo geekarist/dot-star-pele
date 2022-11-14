@@ -189,7 +189,16 @@ class AppViewModel(private val application: Application) : ViewModel() {
 private fun List<NameRatingEntity>.toUiModels(): List<MyNameItemUiModel> = map { it.toUiModel() }
 
 private fun NameRatingEntity.toUiModel(): MyNameItemUiModel =
-    MyNameItemUiModel(nameEntity.text, ratingEntity?.note.toUiModel())
+    MyNameItemUiModel(
+        nameEntity.text,
+        ratingEntity?.note.toUiModel(),
+        nameEntity.gender.toUiModel()
+    )
+
+private fun GenderEntity.toUiModel() = when (this) {
+    GenderEntity.Boy -> GenderUiModel.Boy
+    GenderEntity.Girl -> GenderUiModel.Girl
+}
 
 private fun NoteEntity?.toUiModel(): RatingUiModel = when (this) {
     NoteEntity.Dislike -> RatingUiModel.Dislike

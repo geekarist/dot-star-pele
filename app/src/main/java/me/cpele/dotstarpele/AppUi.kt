@@ -2,6 +2,8 @@ package me.cpele.dotstarpele
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +24,20 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
-data class MyNameItemUiModel(val firstName: String, val rating: RatingUiModel)
+data class MyNameItemUiModel(
+    val firstName: String,
+    val rating: RatingUiModel,
+    val gender: GenderUiModel
+)
+
+enum class GenderUiModel(
+    val tint: Color,
+    @DrawableRes val icon: Int,
+    @StringRes val description: Int
+) {
+    Boy(Color.Blue, R.drawable.ic_male, R.string.my_male),
+    Girl(Color.Magenta, R.drawable.ic_female, R.string.my_female),
+}
 
 enum class RatingUiModel(val text: String) {
     Love("❤️"), Like("\uD83D\uDC4D"), Dislike("\uD83D\uDC4E"), Unknown("❓"),
@@ -232,23 +247,13 @@ fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Un
                 itemsIndexed(itemUiModels) { _, itemUim ->
                     Card {
                         Row(Modifier.padding(16.dp)) {
-                            if (Math.random() < .5) {
-                                Image(
-                                    colorFilter = ColorFilter.tint(Color.Blue),
-                                    modifier = Modifier
-                                        .padding(end = 8.dp),
-                                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_male),
-                                    contentDescription = stringResource(id = R.string.my_male)
-                                )
-                            } else {
-                                Image(
-                                    colorFilter = ColorFilter.tint(Color.Magenta),
-                                    modifier = Modifier
-                                        .padding(end = 8.dp),
-                                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_female),
-                                    contentDescription = stringResource(id = R.string.my_female)
-                                )
-                            }
+                            Image(
+                                colorFilter = ColorFilter.tint(itemUim.gender.tint),
+                                modifier = Modifier
+                                    .padding(end = 8.dp),
+                                imageVector = ImageVector.vectorResource(id = itemUim.gender.icon),
+                                contentDescription = stringResource(id = itemUim.gender.description)
+                            )
                             Text(
                                 text = itemUim.firstName,
                                 modifier = Modifier
