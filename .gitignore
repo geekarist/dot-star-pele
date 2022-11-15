@@ -17,3 +17,4 @@ local.properties
 /.idea/compiler.xml
 /.idea/vcs.xml
 /.idea/deploymentTargetDropDown.xml
+/app/*/*.apk
