@@ -75,47 +75,8 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
-        AppUiModel.Screen.Rate -> Rate(
-            uim = appUim.rate,
-            onClickBack = {
-                dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
-            },
-            onClickLove = { nameText, nameGenderText ->
-                dispatch(
-                    AppViewModel.Event.Review.Love(
-                        nameText = nameText,
-                        nameGenderText = nameGenderText
-                    )
-                )
-            },
-            onClickLike = { nameText, nameGenderText ->
-                dispatch(
-                    AppViewModel.Event.Review.Like(
-                        nameText = nameText,
-                        nameGenderText = nameGenderText
-                    )
-                )
-            },
-            onClickDislike = { nameText, nameGenderText ->
-                dispatch(
-                    AppViewModel.Event.Review.Dislike(
-                        nameText = nameText,
-                        nameGenderText = nameGenderText
-                    )
-                )
-            },
-            onClickUnknown = { nameText, nameGenderText ->
-                dispatch(
-                    AppViewModel.Event.Review.Unknown(
-                        nameText = nameText,
-                        nameGenderText = nameGenderText
-                    )
-                )
-            },
-        )
-        AppUiModel.Screen.My -> My(uim = appUim.myNames) {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
-        }
+        AppUiModel.Screen.Rate -> Rate(uim = appUim.rate, dispatch = dispatch)
+        AppUiModel.Screen.My -> My(uim = appUim.myNames, dispatch = dispatch)
     }
 }
 
@@ -148,11 +109,7 @@ private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
 fun Rate(
     modifier: Modifier = Modifier,
     uim: RateUiModel,
-    onClickBack: () -> Unit,
-    onClickLove: (String, String) -> Unit,
-    onClickLike: (String, String) -> Unit,
-    onClickDislike: (String, String) -> Unit,
-    onClickUnknown: (String, String) -> Unit,
+    dispatch: (AppViewModel.Event) -> Unit,
 ) {
     SideEffect {
         Log.d("UI", "Recomposing with UI model: $uim")
@@ -160,7 +117,9 @@ fun Rate(
     Column(
         modifier = modifier.padding(16.dp)
     ) {
-        BackHandler(onBack = onClickBack)
+        BackHandler(onBack = {
+            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
+        })
         Text(
             text = stringResource(R.string.rate_head),
             style = MaterialTheme.typography.headlineMedium,
@@ -195,7 +154,12 @@ fun Rate(
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                     onClick = {
                         val (key1, key2) = uim.currentNameTag
-                        onClickLove(key1, key2)
+                        dispatch(
+                            AppViewModel.Event.Review.Love(
+                                nameText = key1,
+                                nameGenderText = key2
+                            )
+                        )
                     }) {
                     Text(text = RatingUiModel.Love.text)
                 }
@@ -203,14 +167,24 @@ fun Rate(
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                     onClick = {
                         val (key1, key2) = uim.currentNameTag
-                        onClickLike(key1, key2)
+                        dispatch(
+                            AppViewModel.Event.Review.Like(
+                                nameText = key1,
+                                nameGenderText = key2
+                            )
+                        )
                     }) {
                     Text(text = RatingUiModel.Like.text)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
                     val (key1, key2) = uim.currentNameTag
-                    onClickDislike(key1, key2)
+                    dispatch(
+                        AppViewModel.Event.Review.Dislike(
+                            nameText = key1,
+                            nameGenderText = key2
+                        )
+                    )
                 }) {
                     Text(text = RatingUiModel.Dislike.text)
                 }
@@ -218,7 +192,12 @@ fun Rate(
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
                     onClick = {
                         val (key1, key2) = uim.currentNameTag
-                        onClickUnknown(key1, key2)
+                        dispatch(
+                            AppViewModel.Event.Review.Unknown(
+                                nameText = key1,
+                                nameGenderText = key2
+                            )
+                        )
                     }) {
                     Text(text = RatingUiModel.Unknown.text)
                 }
@@ -229,9 +208,15 @@ fun Rate(
 }
 
 @Composable
-fun My(modifier: Modifier = Modifier, uim: MyNamesUiModel, onClickBack: () -> Unit) {
+fun My(
+    modifier: Modifier = Modifier,
+    uim: MyNamesUiModel,
+    dispatch: (AppViewModel.Event) -> Unit
+) {
     Column(modifier = modifier.padding(16.dp)) {
-        BackHandler(onBack = onClickBack)
+        BackHandler(onBack = {
+            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
+        })
         Text(
             text = stringResource(id = R.string.my_head),
             style = MaterialTheme.typography.headlineMedium
