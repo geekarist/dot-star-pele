@@ -28,18 +28,25 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
         .flowOn(Dispatchers.Default)
 
+    private val listingFilterFlow = MutableStateFlow<String?>(null)
+
     private val myNamesUimFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
-        .map { nameEntities -> // Sort by rank
+        .combine(listingFilterFlow) { nameRatingEntities, filterStr ->
+            nameRatingEntities.filter { nameRatingEntity ->
+                isFuzzyMatch(
+                    nameRatingEntity.nameEntity.text,
+                    filterStr
+                )
+            } to filterStr
+        }.mapNotNull { (nameEntities, filterStr) -> // Sort by rank
             nameEntities
                 .sortedBy { it.nameEntity.gender }
                 .sortedBy { it.nameEntity.text }
-                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
-        }
-        .map { nameEntities -> // Convert to UI model
-            MyNamesUiModel(names = nameEntities.toUiModels())
-        }
-        .flowOn(Dispatchers.Default)
+                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE } to filterStr
+        }.map { (nameEntities, filterStr) -> // Convert to UI model
+            MyNamesUiModel(names = nameEntities.toUiModels(), nameFilter = filterStr ?: "")
+        }.flowOn(Dispatchers.Default)
 
     private val rateUimFlow = unratedNameEntitiesFlow
         .combine(allNameEntitiesFlow) { unratedNameEntities, allNameEntities ->
@@ -130,7 +137,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
                     newNoteEntity = newNoteEntity
                 )
             }
+            is Event.Listing.Filter -> {
+                handleFilterName(event.text)
+            }
         }
+    }
+
+    private fun handleFilterName(text: String) {
+        listingFilterFlow.value = text
     }
 
     private fun handleReview(
@@ -152,7 +166,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            myNames = MyNamesUiModel(), rate = RateUiModel.Loading
+            myNames = MyNamesUiModel(emptyList(), ""), rate = RateUiModel.Loading
         )
     )
 
@@ -184,6 +198,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 override val nameGenderText: String
             ) : Review
         }
+
+        sealed interface Listing : Event {
+            data class Filter(val text: String) : Listing
+        }
     }
 }
 
@@ -208,3 +226,5 @@ private fun NoteEntity?.toUiModel(): RatingUiModel = when (this) {
     NoteEntity.Unknown, null -> RatingUiModel.Unknown
 }
 
+private fun isFuzzyMatch(name: String, filter: String?) =
+    filter.isNullOrBlank() || name.contains(filter)

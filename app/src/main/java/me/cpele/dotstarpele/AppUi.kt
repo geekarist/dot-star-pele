@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package me.cpele.dotstarpele
 
 import android.util.Log
@@ -8,10 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
@@ -62,7 +61,7 @@ sealed interface RateUiModel {
     ) : RateUiModel
 }
 
-data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf())
+data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf(), val nameFilter: String)
 
 inline fun logd(provideMsg: () -> String) {
     val myObject = object : Any() {}
@@ -217,6 +216,9 @@ fun My(
         BackHandler(onBack = {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         })
+        TextField(
+            value = uim.nameFilter,
+            onValueChange = { dispatch(AppViewModel.Event.Listing.Filter(it)) })
         Text(
             text = stringResource(id = R.string.my_head),
             style = MaterialTheme.typography.headlineMedium
