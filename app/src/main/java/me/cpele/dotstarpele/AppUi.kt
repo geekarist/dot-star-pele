@@ -74,11 +74,7 @@ inline fun logd(provideMsg: () -> String) {
 fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
     when (appUim.screen) {
-        AppUiModel.Screen.Home -> Home(onClickRateNames = {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Rate))
-        }, onClickMyNames = {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.My))
-        })
+        AppUiModel.Screen.Home -> Home(dispatch = dispatch)
         AppUiModel.Screen.Rate -> Rate(
             uim = appUim.rate,
             onClickBack = {
@@ -124,7 +120,7 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
 }
 
 @Composable
-private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
+private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
     Column(
         verticalArrangement = Arrangement.Top, modifier = Modifier.padding(16.dp)
     ) {
@@ -137,10 +133,10 @@ private fun Home(onClickRateNames: () -> Unit, onClickMyNames: () -> Unit) {
                 space = 8.dp, alignment = Alignment.CenterVertically
             ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = onClickRateNames) {
+            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Rate)) }) {
                 Text(text = stringResource(R.string.home_rate_button))
             }
-            Button(onClick = onClickMyNames) {
+            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.My)) }) {
                 Text(text = stringResource(R.string.home_mine_button))
             }
             Spacer(modifier = Modifier.height(96.dp))
