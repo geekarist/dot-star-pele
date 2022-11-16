@@ -28,24 +28,28 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
         .flowOn(Dispatchers.Default)
 
-    private val listingFilterFlow = MutableStateFlow<String?>(null)
+    private val listingFilterStrFlow = MutableStateFlow<String?>(null)
 
-    private val myNamesUimFlow = db.nameRatingDao().findAll()
+    private val listingItemUimsFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
-        .combine(listingFilterFlow) { nameRatingEntities, filterStr ->
+        .combine(listingFilterStrFlow) { nameRatingEntities, filterStr ->
             nameRatingEntities.filter { nameRatingEntity ->
                 isFuzzyMatch(
                     nameRatingEntity.nameEntity.text,
                     filterStr
                 )
-            } to filterStr
-        }.mapNotNull { (nameEntities, filterStr) -> // Sort by rank
-            nameEntities
+            }
+        }.mapNotNull { nameRatingEntities -> // Sort by rank
+            nameRatingEntities
                 .sortedBy { it.nameEntity.gender }
                 .sortedBy { it.nameEntity.text }
-                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE } to filterStr
-        }.map { (nameEntities, filterStr) -> // Convert to UI model
-            MyNamesUiModel(names = nameEntities.toUiModels(), nameFilter = filterStr ?: "")
+                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
+        }.map { it.toUiModels() }
+        .flowOn(Dispatchers.Default)
+
+    private val listingUimFlow = listingItemUimsFlow
+        .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
+            ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
         }.flowOn(Dispatchers.Default)
 
     private val rateUimFlow = unratedNameEntitiesFlow
@@ -82,7 +86,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
 
     private val uiModelFlow = combine(
-        myNamesUimFlow,
+        listingUimFlow,
         rateUimFlow,
         screenUimFlow
     ) { myNamesUim, rateUim, screenUim ->
@@ -144,7 +148,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleFilterName(text: String) {
-        listingFilterFlow.value = text
+        listingFilterStrFlow.value = text
     }
 
     private fun handleReview(
@@ -166,7 +170,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            myNames = MyNamesUiModel(emptyList(), ""), rate = RateUiModel.Loading
+            myNames = ListingUiModel(emptyList(), ""), rate = RateUiModel.Loading
         )
     )
 
@@ -205,10 +209,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 }
 
-private fun List<NameRatingEntity>.toUiModels(): List<MyNameItemUiModel> = map { it.toUiModel() }
+private fun List<NameRatingEntity>.toUiModels(): List<ListingItemUiModel> = map { it.toUiModel() }
 
-private fun NameRatingEntity.toUiModel(): MyNameItemUiModel =
-    MyNameItemUiModel(
+private fun NameRatingEntity.toUiModel(): ListingItemUiModel =
+    ListingItemUiModel(
         nameEntity.text,
         ratingEntity?.note.toUiModel(),
         nameEntity.gender.toUiModel()

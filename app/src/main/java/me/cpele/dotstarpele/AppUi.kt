@@ -24,7 +24,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
-data class MyNameItemUiModel(
+data class ListingItemUiModel(
     val firstName: String,
     val rating: RatingUiModel,
     val gender: GenderUiModel
@@ -44,7 +44,7 @@ enum class RatingUiModel(val text: String) {
 }
 
 data class AppUiModel(
-    val myNames: MyNamesUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
+    val myNames: ListingUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
 ) : Serializable {
     enum class Screen {
         Home, Rate, My
@@ -62,7 +62,7 @@ sealed interface RateUiModel {
     ) : RateUiModel
 }
 
-data class MyNamesUiModel(val names: List<MyNameItemUiModel> = listOf(), val nameFilter: String)
+data class ListingUiModel(val names: List<ListingItemUiModel> = listOf(), val nameFilter: String)
 
 inline fun logd(provideMsg: () -> String) {
     val myObject = object : Any() {}
@@ -210,7 +210,7 @@ fun Rate(
 @Composable
 fun My(
     modifier: Modifier = Modifier,
-    uim: MyNamesUiModel,
+    uim: ListingUiModel,
     dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp)) {
