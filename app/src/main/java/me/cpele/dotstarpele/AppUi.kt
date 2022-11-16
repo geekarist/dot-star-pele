@@ -216,17 +216,21 @@ fun My(
         BackHandler(onBack = {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         })
-        TextField(
-            value = uim.nameFilter,
-            onValueChange = { dispatch(AppViewModel.Event.Listing.Filter(it)) })
         Text(
             text = stringResource(id = R.string.my_head),
             style = MaterialTheme.typography.headlineMedium
         )
+        TextField(
+            placeholder = { stringResource(R.string.listing_filter) },
+            value = uim.nameFilter,
+            modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth(),
+            onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 24.dp),
+                .padding(top = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
         ) {
