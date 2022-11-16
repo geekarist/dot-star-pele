@@ -230,5 +230,17 @@ private fun NoteEntity?.toUiModel(): RatingUiModel = when (this) {
     NoteEntity.Unknown, null -> RatingUiModel.Unknown
 }
 
-private fun isFuzzyMatch(name: String, filter: String?) =
-    filter.isNullOrBlank() || name.contains(filter)
+private fun isFuzzyMatch(name: String, filter: String?): Boolean {
+    val unaccentedName = replaceAccents(name)
+    val unaccentedFilter = replaceAccents(filter)
+    return filter.isNullOrBlank() || unaccentedName.contains(unaccentedFilter, ignoreCase = true)
+}
+
+private fun replaceAccents(str: String?) = str
+    ?.replace('é', 'e')
+    ?.replace('è', 'e')
+    ?.replace('ê', 'e')
+    ?.replace('ë', 'e')
+    ?.replace('à', 'a')
+    ?.replace('â', 'a')
+    ?: ""
