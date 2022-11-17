@@ -10,12 +10,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.text.Normalizer
 
+@FlowPreview
 class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
@@ -30,10 +32,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .flowOn(Dispatchers.Default)
 
     private val listingFilterStrFlow = MutableStateFlow<String?>(null)
+    private val listingDebouncedFilterStrFlow = listingFilterStrFlow.debounce(50)
 
     private val listingItemUimsFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
-        .combine(listingFilterStrFlow) { nameRatingEntities, filterStr ->
+        .combine(listingDebouncedFilterStrFlow) { nameRatingEntities, filterStr ->
             nameRatingEntities.filter { nameRatingEntity ->
                 isMatch(
                     nameRatingEntity.nameEntity.text,
@@ -246,5 +249,5 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
     // Decompose each accented char into a combined char and a base char
     Normalizer.normalize(nonNullStr, Normalizer.Form.NFD)
         // Remove combined chars
-        .replace("\\p{Mn}+".toRegex(), "")
+        .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
 }
