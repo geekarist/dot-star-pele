@@ -245,7 +245,7 @@ fun My(
                         prevRatingUim != itemUim.rating
                     }
                     if (isNewRating) {
-                        Text(text = itemUim.rating.text)
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                     Card {
                         Row(Modifier.padding(16.dp)) {
