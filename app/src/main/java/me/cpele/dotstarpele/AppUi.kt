@@ -12,8 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -213,7 +212,7 @@ fun My(
     uim: ListingUiModel,
     dispatch: (AppViewModel.Event) -> Unit
 ) {
-    Column(modifier = modifier.padding(16.dp)) {
+    Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
         BackHandler(onBack = {
             dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
         })
@@ -225,23 +224,29 @@ fun My(
             placeholder = { stringResource(R.string.listing_filter) },
             value = uim.nameFilter,
             modifier = Modifier
-                .padding(top = 24.dp)
                 .fillMaxWidth(),
             onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 16.dp),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
         ) {
             val itemUiModels = uim.names
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(
-                    16.dp, alignment = Alignment.Top
+                    8.dp, alignment = Alignment.Top
                 )
             ) {
-                itemsIndexed(itemUiModels) { _, itemUim ->
+                itemsIndexed(itemUiModels) { itemIndex, itemUim ->
+                    val isNewRating: Boolean = remember {
+                        val prevItemUim = itemUiModels.getOrElse(itemIndex - 1) { itemUim }
+                        val prevRatingUim = prevItemUim.rating
+                        prevRatingUim != itemUim.rating
+                    }
+                    if (isNewRating) {
+                        Text(text = itemUim.rating.text)
+                    }
                     Card {
                         Row(Modifier.padding(16.dp)) {
                             Image(

@@ -1,3 +1,6 @@
+@file:OptIn(FlowPreview::class)
+@file:Suppress("OPT_IN_IS_NOT_ENABLED")
+
 package me.cpele.dotstarpele
 
 import android.app.Application
@@ -17,7 +20,6 @@ import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.text.Normalizer
 
-@FlowPreview
 class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
