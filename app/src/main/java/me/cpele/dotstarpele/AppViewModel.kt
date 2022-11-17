@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
+import java.text.Normalizer
 
 class AppViewModel(private val application: Application) : ViewModel() {
 
@@ -34,7 +35,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .flowOn(Dispatchers.IO)
         .combine(listingFilterStrFlow) { nameRatingEntities, filterStr ->
             nameRatingEntities.filter { nameRatingEntity ->
-                isFuzzyMatch(
+                isMatch(
                     nameRatingEntity.nameEntity.text,
                     filterStr
                 )
@@ -230,17 +231,20 @@ private fun NoteEntity?.toUiModel(): RatingUiModel = when (this) {
     NoteEntity.Unknown, null -> RatingUiModel.Unknown
 }
 
-private fun isFuzzyMatch(name: String, filter: String?): Boolean {
-    val unaccentedName = replaceAccents(name)
-    val unaccentedFilter = replaceAccents(filter)
-    return filter.isNullOrBlank() || unaccentedName.contains(unaccentedFilter, ignoreCase = true)
+private fun isMatch(name: String, filter: String?): Boolean {
+    val unaccentedName = unaccented(name)
+    val unaccentedFilter = unaccented(filter)
+    return unaccentedFilter == unaccentedName
+            || unaccentedFilter.isNullOrBlank()
+            || unaccentedName?.contains(unaccentedFilter, ignoreCase = true) == true
 }
 
-private fun replaceAccents(str: String?) = str
-    ?.replace('é', 'e')
-    ?.replace('è', 'e')
-    ?.replace('ê', 'e')
-    ?.replace('ë', 'e')
-    ?.replace('à', 'a')
-    ?.replace('â', 'a')
-    ?: ""
+/**
+ * Replace accented characters with unaccented ones.
+ */
+private fun unaccented(str: String?) = str?.let { nonNullStr ->
+    // Decompose each accented char into a combined char and a base char
+    Normalizer.normalize(nonNullStr, Normalizer.Form.NFD)
+        // Remove combined chars
+        .replace("\\p{Mn}+".toRegex(), "")
+}
