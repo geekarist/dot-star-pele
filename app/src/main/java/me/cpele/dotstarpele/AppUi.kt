@@ -239,11 +239,12 @@ fun My(
                 )
             ) {
                 itemsIndexed(itemUiModels) { itemIndex, itemUim ->
-                    val isNewRating: Boolean = remember {
-                        val prevItemUim = itemUiModels.getOrElse(itemIndex - 1) { itemUim }
-                        val prevRatingUim = prevItemUim.rating
-                        prevRatingUim != itemUim.rating
+                    val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
+                        itemUiModels.getOrElse(itemIndex - 1) { itemUim }
                     }
+                    val prevRatingUim = remember(prevItemUim) { prevItemUim.rating }
+                    val isNewRating =
+                        remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
