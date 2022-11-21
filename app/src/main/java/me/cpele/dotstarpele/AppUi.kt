@@ -249,7 +249,7 @@ fun My(
                     if (isNewRating) {
                         Text(
                             text = "·",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.displaySmall
                         )
                     }
                     Card {
