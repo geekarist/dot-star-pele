@@ -251,8 +251,7 @@ fun My(
                         Spacer(
                             modifier = Modifier
                                 .height(Dp.Hairline)
-                                .background(Color.LightGray)
-                                .padding(8.dp)
+                                .background(Color.DarkGray)
                         )
                     }
                     Card {
