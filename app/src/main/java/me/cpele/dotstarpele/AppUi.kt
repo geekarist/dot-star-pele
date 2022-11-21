@@ -246,7 +246,7 @@ fun My(
                     val isNewRating =
                         remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                     Card {
                         Row(Modifier.padding(16.dp)) {
