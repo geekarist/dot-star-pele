@@ -8,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
@@ -246,7 +248,12 @@ fun My(
                     val isNewRating =
                         remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(
+                            modifier = Modifier
+                                .height(Dp.Hairline)
+                                .background(Color.LightGray)
+                                .padding(8.dp)
+                        )
                     }
                     Card {
                         Row(Modifier.padding(16.dp)) {
