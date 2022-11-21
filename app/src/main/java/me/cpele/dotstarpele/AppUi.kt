@@ -237,7 +237,8 @@ fun My(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(
                     8.dp, alignment = Alignment.Top
-                )
+                ),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 itemsIndexed(itemUiModels) { itemIndex, itemUim ->
                     val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
@@ -249,7 +250,6 @@ fun My(
                     if (isNewRating) {
                         Text(
                             text = "·",
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
                     }
