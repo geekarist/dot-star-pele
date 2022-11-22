@@ -251,7 +251,8 @@ fun My(
                     if (isNewRating) {
                         Text(
                             text = stringResource(id = itemUim.rating.text),
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                     Card {
