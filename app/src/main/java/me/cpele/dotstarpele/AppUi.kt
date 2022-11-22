@@ -240,7 +240,6 @@ fun My(
                 verticalArrangement = Arrangement.spacedBy(
                     8.dp, alignment = Alignment.Top
                 ),
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 itemsIndexed(itemUiModels) { itemIndex, itemUim ->
                     val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
