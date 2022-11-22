@@ -249,7 +249,10 @@ fun My(
                     val isNewRating =
                         remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
-                        Text(text = stringResource(id = itemUim.rating.text))
+                        Text(
+                            text = stringResource(id = itemUim.rating.text),
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
                     }
                     Card {
                         Row(Modifier.padding(16.dp)) {
