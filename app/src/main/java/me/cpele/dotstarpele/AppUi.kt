@@ -243,9 +243,9 @@ fun My(
             ) {
                 itemsIndexed(itemUiModels) { itemIndex, itemUim ->
                     val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
-                        itemUiModels.getOrElse(itemIndex - 1) { itemUim }
+                        itemUiModels.getOrNull(itemIndex - 1)
                     }
-                    val prevRatingUim = remember(prevItemUim) { prevItemUim.rating }
+                    val prevRatingUim = remember(prevItemUim) { prevItemUim?.rating }
                     val isNewRating =
                         remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
