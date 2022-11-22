@@ -1,5 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-@file:Suppress("OPT_IN_IS_NOT_ENABLED")
+@file:OptIn(ExperimentalMaterial3Api::class) @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
 package me.cpele.dotstarpele
 
@@ -24,32 +23,32 @@ import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
 data class ListingItemUiModel(
-    val firstName: String,
-    val rating: RatingUiModel,
-    val gender: GenderUiModel
+    val firstName: String, val rating: RatingUiModel, val gender: GenderUiModel
 )
 
 enum class GenderUiModel(
-    val tint: Color,
-    @DrawableRes val icon: Int,
-    @StringRes val description: Int
+    val tint: Color, @DrawableRes val icon: Int, @StringRes val description: Int
 ) {
-    Boy(Color.Blue, R.drawable.ic_male, R.string.my_male),
-    Girl(Color.Magenta, R.drawable.ic_female, R.string.my_female),
+    Boy(Color.Blue, R.drawable.ic_male, R.string.my_male), Girl(
+        Color.Magenta,
+        R.drawable.ic_female,
+        R.string.my_female
+    ),
 }
 
 enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
-    Love("❤️", R.string.listing_love),
-    Like("\uD83D\uDC4D", R.string.listing_like),
-    Dislike("\uD83D\uDC4E", R.string.listing_dislike),
-    Unknown("❓", R.string.listing_unknown),
+    Love("❤️", R.string.listing_love), Like(
+        "\uD83D\uDC4D",
+        R.string.listing_like
+    ),
+    Dislike("\uD83D\uDC4E", R.string.listing_dislike), Unknown("❓", R.string.listing_unknown),
 }
 
 data class AppUiModel(
     val myNames: ListingUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
 ) : Serializable {
     enum class Screen {
-        Home, Rate, My
+        Home, Proposal, Listing
     }
 }
 
@@ -77,8 +76,8 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
-        AppUiModel.Screen.Rate -> Rate(uim = appUim.rate, dispatch = dispatch)
-        AppUiModel.Screen.My -> My(uim = appUim.myNames, dispatch = dispatch)
+        AppUiModel.Screen.Proposal -> Proposal(uim = appUim.rate, dispatch = dispatch)
+        AppUiModel.Screen.Listing -> Listing(uim = appUim.myNames, dispatch = dispatch)
     }
 }
 
@@ -96,10 +95,10 @@ private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
                 space = 8.dp, alignment = Alignment.CenterVertically
             ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Rate)) }) {
+            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Proposal)) }) {
                 Text(text = stringResource(R.string.home_rate_button))
             }
-            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.My)) }) {
+            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Listing)) }) {
                 Text(text = stringResource(R.string.home_mine_button))
             }
             Spacer(modifier = Modifier.height(96.dp))
@@ -108,7 +107,7 @@ private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
 }
 
 @Composable
-fun Rate(
+fun Proposal(
     modifier: Modifier = Modifier,
     uim: RateUiModel,
     dispatch: (AppViewModel.Event) -> Unit,
@@ -153,29 +152,25 @@ fun Rate(
                     )
                 )
                 Spacer(modifier = Modifier.height(32.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = {
-                        val (key1, key2) = uim.currentNameTag
-                        dispatch(
-                            AppViewModel.Event.Review.Love(
-                                nameText = key1,
-                                nameGenderText = key2
-                            )
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+                    val (key1, key2) = uim.currentNameTag
+                    dispatch(
+                        AppViewModel.Event.Review.Love(
+                            nameText = key1, nameGenderText = key2
                         )
-                    }) {
+                    )
+                }) {
                     Text(text = RatingUiModel.Love.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = {
-                        val (key1, key2) = uim.currentNameTag
-                        dispatch(
-                            AppViewModel.Event.Review.Like(
-                                nameText = key1,
-                                nameGenderText = key2
-                            )
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+                    val (key1, key2) = uim.currentNameTag
+                    dispatch(
+                        AppViewModel.Event.Review.Like(
+                            nameText = key1, nameGenderText = key2
                         )
-                    }) {
+                    )
+                }) {
                     Text(text = RatingUiModel.Like.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -183,24 +178,21 @@ fun Rate(
                     val (key1, key2) = uim.currentNameTag
                     dispatch(
                         AppViewModel.Event.Review.Dislike(
-                            nameText = key1,
-                            nameGenderText = key2
+                            nameText = key1, nameGenderText = key2
                         )
                     )
                 }) {
                     Text(text = RatingUiModel.Dislike.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = {
-                        val (key1, key2) = uim.currentNameTag
-                        dispatch(
-                            AppViewModel.Event.Review.Unknown(
-                                nameText = key1,
-                                nameGenderText = key2
-                            )
+                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+                    val (key1, key2) = uim.currentNameTag
+                    dispatch(
+                        AppViewModel.Event.Review.Unknown(
+                            nameText = key1, nameGenderText = key2
                         )
-                    }) {
+                    )
+                }) {
                     Text(text = RatingUiModel.Unknown.emoji)
                 }
                 Spacer(modifier = Modifier.height(96.dp))
@@ -210,73 +202,84 @@ fun Rate(
 }
 
 @Composable
-fun My(
-    modifier: Modifier = Modifier,
-    uim: ListingUiModel,
-    dispatch: (AppViewModel.Event) -> Unit
+fun Listing(
+    modifier: Modifier = Modifier, uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
-        BackHandler(onBack = {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
-        })
-        Text(
-            text = stringResource(id = R.string.my_head),
-            style = MaterialTheme.typography.headlineMedium
-        )
-        TextField(
-            placeholder = { stringResource(R.string.listing_filter) },
-            value = uim.nameFilter,
-            modifier = Modifier
-                .fillMaxWidth(),
-            onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
+        ListingControls(uim, dispatch)
+        ListingBody(uim)
+    }
+}
+
+@Composable
+private fun ListingBody(uim: ListingUiModel) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        val itemUiModels = uim.names
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(
+                8.dp, alignment = Alignment.Top
+            ),
         ) {
-            val itemUiModels = uim.names
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(
-                    8.dp, alignment = Alignment.Top
-                ),
-            ) {
-                itemsIndexed(itemUiModels) { itemIndex, itemUim ->
-                    val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
-                        itemUiModels.getOrNull(itemIndex - 1)
-                    }
-                    val prevRatingUim = remember(prevItemUim) { prevItemUim?.rating }
-                    val isNewRating =
-                        remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
-                    if (isNewRating) {
-                        Text(
-                            text = stringResource(id = itemUim.rating.text),
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    Card {
-                        Row(Modifier.padding(16.dp)) {
-                            Image(
-                                colorFilter = ColorFilter.tint(itemUim.gender.tint),
-                                modifier = Modifier
-                                    .padding(end = 8.dp),
-                                imageVector = ImageVector.vectorResource(id = itemUim.gender.icon),
-                                contentDescription = stringResource(id = itemUim.gender.description)
-                            )
-                            Text(
-                                text = itemUim.firstName,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .align(Alignment.CenterVertically)
-                            )
-                            Text(
-                                text = itemUim.rating.emoji
-                            )
-                        }
-                    }
+            itemsIndexed(itemUiModels) { itemIndex, itemUim ->
+                val prevItemUim = remember(itemUiModels, itemIndex, itemUim) {
+                    itemUiModels.getOrNull(itemIndex - 1)
                 }
+                val prevRatingUim = remember(prevItemUim) { prevItemUim?.rating }
+                val isNewRating =
+                    remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
+                ListingItem(isNewRating, itemUim)
             }
+        }
+    }
+}
+
+@Composable
+private fun ListingControls(
+    uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit
+) {
+    BackHandler(onBack = {
+        dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
+    })
+    Text(
+        text = stringResource(id = R.string.my_head),
+        style = MaterialTheme.typography.headlineMedium
+    )
+    TextField(placeholder = { stringResource(R.string.listing_filter) },
+        value = uim.nameFilter,
+        modifier = Modifier.fillMaxWidth(),
+        onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
+}
+
+@Composable
+private fun ListingItem(isNewRating: Boolean, itemUim: ListingItemUiModel) {
+    if (isNewRating) {
+        Text(
+            text = stringResource(id = itemUim.rating.text),
+            modifier = Modifier.padding(vertical = 8.dp),
+            style = MaterialTheme.typography.titleMedium
+        )
+    }
+    Card {
+        Row(Modifier.padding(16.dp)) {
+            Image(
+                colorFilter = ColorFilter.tint(itemUim.gender.tint),
+                modifier = Modifier.padding(end = 8.dp),
+                imageVector = ImageVector.vectorResource(id = itemUim.gender.icon),
+                contentDescription = stringResource(id = itemUim.gender.description)
+            )
+            Text(
+                text = itemUim.firstName,
+                modifier = Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)
+            )
+            Text(
+                text = itemUim.rating.emoji
+            )
         }
     }
 }
