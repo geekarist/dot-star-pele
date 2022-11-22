@@ -207,12 +207,12 @@ fun Listing(
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
         ListingControls(uim, dispatch)
-        ListingBody(uim)
+        ListingBody(uim, dispatch)
     }
 }
 
 @Composable
-private fun ListingBody(uim: ListingUiModel) {
+private fun ListingBody(uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -231,7 +231,7 @@ private fun ListingBody(uim: ListingUiModel) {
                 val prevRatingUim = remember(prevItemUim) { prevItemUim?.rating }
                 val isNewRating =
                     remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
-                ListingItem(isNewRating, itemUim)
+                ListingItem(isNewRating, itemUim, dispatch)
             }
         }
     }
@@ -255,7 +255,11 @@ private fun ListingControls(
 }
 
 @Composable
-private fun ListingItem(isNewRating: Boolean, itemUim: ListingItemUiModel) {
+private fun ListingItem(
+    isNewRating: Boolean,
+    itemUim: ListingItemUiModel,
+    dispatch: (AppViewModel.Event) -> Unit
+) {
     if (isNewRating) {
         Text(
             text = stringResource(id = itemUim.rating.text),
@@ -263,7 +267,9 @@ private fun ListingItem(isNewRating: Boolean, itemUim: ListingItemUiModel) {
             style = MaterialTheme.typography.titleMedium
         )
     }
-    Card {
+    Card(onClick = {
+        dispatch(AppViewModel.Event.Navigation(screen = AppUiModel.Screen.Proposal))
+    }) {
         Row(Modifier.padding(16.dp)) {
             Image(
                 colorFilter = ColorFilter.tint(itemUim.gender.tint),
