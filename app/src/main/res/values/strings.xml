@@ -9,4 +9,8 @@
     <string name="my_male">Boy</string>
     <string name="my_female">Girl</string>
     <string name="listing_filter">Filter</string>
+    <string name="listing_love">Love</string>
+    <string name="listing_like">Like</string>
+    <string name="listing_dislike">Dislike</string>
+    <string name="listing_unknown">Unknown</string>
 </resources>

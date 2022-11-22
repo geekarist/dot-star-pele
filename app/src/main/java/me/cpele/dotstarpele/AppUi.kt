@@ -38,8 +38,11 @@ enum class GenderUiModel(
     Girl(Color.Magenta, R.drawable.ic_female, R.string.my_female),
 }
 
-enum class RatingUiModel(val text: String) {
-    Love("❤️"), Like("\uD83D\uDC4D"), Dislike("\uD83D\uDC4E"), Unknown("❓"),
+enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
+    Love("❤️", R.string.listing_love),
+    Like("\uD83D\uDC4D", R.string.listing_like),
+    Dislike("\uD83D\uDC4E", R.string.listing_dislike),
+    Unknown("❓", R.string.listing_unknown),
 }
 
 data class AppUiModel(
@@ -160,7 +163,7 @@ fun Rate(
                             )
                         )
                     }) {
-                    Text(text = RatingUiModel.Love.text)
+                    Text(text = RatingUiModel.Love.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -173,7 +176,7 @@ fun Rate(
                             )
                         )
                     }) {
-                    Text(text = RatingUiModel.Like.text)
+                    Text(text = RatingUiModel.Like.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
@@ -185,7 +188,7 @@ fun Rate(
                         )
                     )
                 }) {
-                    Text(text = RatingUiModel.Dislike.text)
+                    Text(text = RatingUiModel.Dislike.emoji)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -198,7 +201,7 @@ fun Rate(
                             )
                         )
                     }) {
-                    Text(text = RatingUiModel.Unknown.text)
+                    Text(text = RatingUiModel.Unknown.emoji)
                 }
                 Spacer(modifier = Modifier.height(96.dp))
             }
@@ -247,10 +250,7 @@ fun My(
                     val isNewRating =
                         remember(prevRatingUim, itemUim.rating) { prevRatingUim != itemUim.rating }
                     if (isNewRating) {
-                        Text(
-                            text = "·",
-                            style = MaterialTheme.typography.displaySmall
-                        )
+                        Text(text = stringResource(id = itemUim.rating.text))
                     }
                     Card {
                         Row(Modifier.padding(16.dp)) {
@@ -268,7 +268,7 @@ fun My(
                                     .align(Alignment.CenterVertically)
                             )
                             Text(
-                                text = itemUim.rating.text
+                                text = itemUim.rating.emoji
                             )
                         }
                     }
