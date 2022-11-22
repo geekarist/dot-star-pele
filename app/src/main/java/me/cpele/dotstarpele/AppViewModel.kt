@@ -34,7 +34,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .flowOn(Dispatchers.Default)
 
     private val listingFilterStrFlow = MutableStateFlow<String?>(null)
-    private val listingDebouncedFilterStrFlow = listingFilterStrFlow.debounce(50)
+    private val listingDebouncedFilterStrFlow = listingFilterStrFlow.debounce(100)
 
     private val listingItemUimsFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
