@@ -58,7 +58,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
             ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
         }.flowOn(Dispatchers.Default)
 
-    private val rateUimFlow = unratedNameEntitiesFlow
+    private val requestedNameTagFlow = MutableStateFlow<Any?>(null)
+
+    // TODO: use combine top-level function
+    private val proposalUimFlow = unratedNameEntitiesFlow
         .combine(allNameEntitiesFlow) { unratedNameEntities, allNameEntities ->
             unratedNameEntities to allNameEntities.size
         }
@@ -93,7 +96,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val uiModelFlow = combine(
         listingUimFlow,
-        rateUimFlow,
+        proposalUimFlow,
         screenUimFlow
     ) { myNamesUim, rateUim, screenUim ->
         AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
@@ -150,7 +153,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
             is Event.Listing.Filter -> {
                 handleFilterName(event.text)
             }
+            is Event.Listing.ItemClicked -> {
+                handleListingItemClicked(event)
+            }
         }
+    }
+
+    private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
+        requestedNameTagFlow.value = event.nameTag
     }
 
     private fun handleFilterName(text: String) {
@@ -211,6 +221,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
         sealed interface Listing : Event {
             data class Filter(val text: String) : Listing
+            data class ItemClicked(val nameTag: Any) : Listing
         }
     }
 }
@@ -219,9 +230,10 @@ private fun List<NameRatingEntity>.toUiModels(): List<ListingItemUiModel> = map 
 
 private fun NameRatingEntity.toUiModel(): ListingItemUiModel =
     ListingItemUiModel(
-        nameEntity.text,
-        ratingEntity?.note.toUiModel(),
-        nameEntity.gender.toUiModel()
+        firstName = nameEntity.text,
+        rating = ratingEntity?.note.toUiModel(),
+        gender = nameEntity.gender.toUiModel(),
+        nameTag = nameEntity,
     )
 
 private fun GenderEntity.toUiModel() = when (this) {

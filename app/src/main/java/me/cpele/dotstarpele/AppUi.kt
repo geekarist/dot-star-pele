@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
 data class ListingItemUiModel(
-    val firstName: String, val rating: RatingUiModel, val gender: GenderUiModel
+    val firstName: String, val rating: RatingUiModel, val gender: GenderUiModel, val nameTag: Any
 )
 
 enum class GenderUiModel(
@@ -268,7 +268,7 @@ private fun ListingItem(
         )
     }
     Card(onClick = {
-        dispatch(AppViewModel.Event.Navigation(screen = AppUiModel.Screen.Proposal))
+        dispatch(AppViewModel.Event.Listing.ItemClicked(nameTag = itemUim.nameTag))
     }) {
         Row(Modifier.padding(16.dp)) {
             Image(
