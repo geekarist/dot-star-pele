@@ -26,6 +26,9 @@ interface RatingDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(newRating: RatingEntity)
+
+    @Delete
+    fun remove(entity: RatingEntity)
 }
 
 @Dao

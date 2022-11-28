@@ -166,6 +166,14 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
         requestedNameTagFlow.value = event.nameTag
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val nameEntity = event.nameTag as? NameEntity
+                ?: error("Wrong name tag type for ${event.nameTag}")
+            val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
+                ?: error("No rating found for name: $nameEntity ⇒ can't delete")
+            db.ratingDao().remove(ratingEntity)
+        }
     }
 
     private fun handleFilterName(text: String) {
