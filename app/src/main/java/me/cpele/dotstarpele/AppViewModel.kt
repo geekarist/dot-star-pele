@@ -60,11 +60,12 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val requestedNameTagFlow = MutableStateFlow<Any?>(null)
 
-    private val requestedNameEntityFlow = requestedNameTagFlow.filterIsInstance<NameEntity>()
+    private val requestedNameEntityFlow = requestedNameTagFlow.filterIsInstance<NameEntity?>()
 
     private val proposalUimFlow = unratedNameEntitiesFlow
         .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
-            listOf(requestedNameEntity) + unratedNameEntities
+            val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
+            requestedNameEntityList + unratedNameEntities
         }
         .combine(allNameEntitiesFlow) { nameToRateEntities, allNameEntities ->
             nameToRateEntities to allNameEntities.size
