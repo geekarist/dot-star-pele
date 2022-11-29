@@ -198,9 +198,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             db.ratingDao().insert(newRatingEntity)
 
             // Clear any name that was requested for next rating
-            if (requestedNameTagFlow.value != null) {
-                requestedNameTagFlow.value = null
-            }
+            requestedNameTagFlow.value = null
         }
     }
 
