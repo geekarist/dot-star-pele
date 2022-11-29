@@ -67,7 +67,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
             requestedNameEntityList + unratedNameEntities
         }
-        .debounce(500)
         .combine(allNameEntitiesFlow) { nameToRateEntities, allNameEntities ->
             nameToRateEntities to allNameEntities.size
         }
