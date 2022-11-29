@@ -170,9 +170,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val nameEntity = event.nameTag as? NameEntity
                 ?: error("Wrong name tag type for ${event.nameTag}")
-            val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
-                ?: error("No rating found for name: $nameEntity ⇒ can't delete")
-            db.ratingDao().remove(ratingEntity)
+            db.ratingDao()
+                .findByName(nameEntity.text, nameEntity.gender)
+                ?.let {
+                    db.ratingDao().remove(it)
+                }
         }
     }
 
