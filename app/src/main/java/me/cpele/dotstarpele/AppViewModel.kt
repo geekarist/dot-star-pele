@@ -188,6 +188,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         newNoteEntity: NoteEntity
     ) {
         viewModelScope.launch(Dispatchers.IO) {
+            // Update rating and insert
             val nameEntity = db.nameDao().findOne(nameText, nameGender)
             val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
             val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
@@ -195,6 +196,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
             )
             Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingEntity")
             db.ratingDao().insert(newRatingEntity)
+
+            // Clear any name that was requested for next rating
+            requestedNameTagFlow.value = null
         }
     }
 
