@@ -140,28 +140,25 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     fun dispatch(event: Event) {
         when (event) {
-            is Event.Navigation ->
-                screenUimFlow.value = event.screen
-            is Event.Review -> {
-                val newNoteEntity = when (event) {
-                    is Event.Review.Love -> NoteEntity.Love
-                    is Event.Review.Like -> NoteEntity.Like
-                    is Event.Review.Dislike -> NoteEntity.Dislike
-                    is Event.Review.Unknown -> NoteEntity.Unknown
-                }
-                handleReview(
-                    nameText = event.nameText,
-                    nameGender = GenderEntity.valueOf(event.nameGenderText),
-                    newNoteEntity = newNoteEntity
-                )
-            }
-            is Event.Listing.Filter -> {
-                handleFilterName(event.text)
-            }
-            is Event.Listing.ItemClicked -> {
-                handleListingItemClicked(event)
-            }
+            is Event.Navigation -> screenUimFlow.value = event.screen
+            is Event.Review -> handleReviewEvent(event)
+            is Event.Listing.Filter -> handleFilterName(event.text)
+            is Event.Listing.ItemClicked -> handleListingItemClicked(event)
         }
+    }
+
+    private fun handleReviewEvent(event: Event.Review) {
+        val newNoteEntity = when (event) {
+            is Event.Review.Love -> NoteEntity.Love
+            is Event.Review.Like -> NoteEntity.Like
+            is Event.Review.Dislike -> NoteEntity.Dislike
+            is Event.Review.Unknown -> NoteEntity.Unknown
+        }
+        handleReview(
+            nameText = event.nameText,
+            nameGender = GenderEntity.valueOf(event.nameGenderText),
+            newNoteEntity = newNoteEntity
+        )
     }
 
     private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
