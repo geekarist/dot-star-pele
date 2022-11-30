@@ -162,6 +162,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
+        screenUimFlow.value = AppUiModel.Screen.Proposal
+
         requestedNameTagFlow.value = event.nameTag
 
         viewModelScope.launch(Dispatchers.IO) {
