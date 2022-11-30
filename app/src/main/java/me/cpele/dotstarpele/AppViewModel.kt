@@ -24,6 +24,12 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
+    private object State {
+        val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
+        val listingFilterStrFlow = MutableStateFlow<String?>(null)
+        val requestedNameTagFlow = MutableStateFlow<Any?>(null)
+    }
+
     private val allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
     private val unratedNameEntitiesFlow = db.nameDao().flowUnrated()
@@ -33,8 +39,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
         .flowOn(Dispatchers.Default)
 
-    private val listingFilterStrFlow = MutableStateFlow<String?>(null)
-    private val listingDebouncedFilterStrFlow = listingFilterStrFlow.debounce(100)
+    private val listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100)
 
     private val listingItemUimsFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
@@ -54,13 +59,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .flowOn(Dispatchers.Default)
 
     private val listingUimFlow = listingItemUimsFlow
-        .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
+        .combine(State.listingFilterStrFlow) { listingItemUims, filterStr ->
             ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
         }.flowOn(Dispatchers.Default)
 
-    private val requestedNameTagFlow = MutableStateFlow<Any?>(null)
-
-    private val requestedNameEntityFlow = requestedNameTagFlow.filterIsInstance<NameEntity?>()
+    private val requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance<NameEntity?>()
 
     private val proposalUimFlow = unratedNameEntitiesFlow
         .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
@@ -97,12 +100,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
         .filterNotNull()
         .flowOn(Dispatchers.Default)
 
-    private val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
-
     private val uiModelFlow = combine(
         listingUimFlow,
         proposalUimFlow,
-        screenUimFlow
+        State.screenUimFlow
     ) { myNamesUim, rateUim, screenUim ->
         AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
     }
@@ -140,7 +141,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     fun dispatch(event: Event) {
         when (event) {
-            is Event.Navigation -> screenUimFlow.value = event.screen
+            is Event.Navigation -> State.screenUimFlow.value = event.screen
             is Event.Review -> handleReviewEvent(event)
             is Event.Listing.Filter -> handleFilterName(event.text)
             is Event.Listing.ItemClicked -> handleListingItemClicked(event)
@@ -162,9 +163,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
-        screenUimFlow.value = AppUiModel.Screen.Proposal
+        State.screenUimFlow.value = AppUiModel.Screen.Proposal
 
-        requestedNameTagFlow.value = event.nameTag
+        State.requestedNameTagFlow.value = event.nameTag
 
         viewModelScope.launch(Dispatchers.IO) {
             val nameEntity = event.nameTag as? NameEntity
@@ -178,7 +179,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleFilterName(text: String) {
-        listingFilterStrFlow.value = text
+        State.listingFilterStrFlow.value = text
     }
 
     private fun handleReview(
@@ -197,7 +198,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             db.ratingDao().insert(newRatingEntity)
 
             // Clear any name that was requested for next rating
-            requestedNameTagFlow.value = null
+            State.requestedNameTagFlow.value = null
         }
     }
 
