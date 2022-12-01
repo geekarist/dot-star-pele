@@ -32,16 +32,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
 
-    private val unratedNameEntitiesFlow = db.nameDao().flowUnrated()
-        .flowOn(Dispatchers.IO)
-        .map {
-            it.shuffled()
-        }
-        .flowOn(Dispatchers.Default)
-
     private val listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100)
 
-    private val listingItemUimsFlow = db.nameRatingDao().findAll()
+    private val listingUimFlow = db.nameRatingDao().findAll()
         .flowOn(Dispatchers.IO)
         .combine(listingDebouncedFilterStrFlow) { nameRatingEntities, filterStr ->
             nameRatingEntities.filter { nameRatingEntity ->
@@ -57,15 +50,18 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
         }.map { it.toUiModels() }
         .flowOn(Dispatchers.Default)
-
-    private val listingUimFlow = listingItemUimsFlow
         .combine(State.listingFilterStrFlow) { listingItemUims, filterStr ->
             ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
         }.flowOn(Dispatchers.Default)
 
     private val requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance<NameEntity?>()
 
-    private val proposalUimFlow = unratedNameEntitiesFlow
+    private val proposalUimFlow = db.nameDao().flowUnrated()
+        .flowOn(Dispatchers.IO)
+        .map {
+            it.shuffled()
+        }
+        .flowOn(Dispatchers.Default)
         .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
             val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
             requestedNameEntityList + unratedNameEntities
@@ -98,6 +94,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
             }
         }
         .filterNotNull()
+        .onEach { logd { "Got proposal UI model: $it" } }
         .flowOn(Dispatchers.Default)
 
     private val uiModelFlow = combine(
