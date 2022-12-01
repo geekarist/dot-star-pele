@@ -30,13 +30,13 @@ class AppViewModel(private val application: Application) : ViewModel() {
         val requestedNameTagFlow = MutableStateFlow<Any?>(null)
     }
 
-    private val listingUimFlow = flowListingUim(
+    private val listingUimFlow = setUpListingUimFlow(
         nameRatingEntitiesFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
         listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
         listingFilterStrFlow = State.listingFilterStrFlow
     )
 
-    private val proposalUimFlow = flowProposalUim(
+    private val proposalUimFlow = setUpProposalUimFlow(
         unratedNamesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO),
         requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance(),
         allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
@@ -227,7 +227,7 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
         .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
 }
 
-private fun flowListingUim(
+private fun setUpListingUimFlow(
     nameRatingEntitiesFlow: Flow<List<NameRatingEntity>>,
     listingDebouncedFilterStrFlow: Flow<String?>,
     listingFilterStrFlow: MutableStateFlow<String?>
@@ -250,7 +250,7 @@ private fun flowListingUim(
         ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
     }.flowOn(Dispatchers.Default)
 
-private fun flowProposalUim(
+private fun setUpProposalUimFlow(
     unratedNamesFlow: Flow<List<NameEntity>>,
     requestedNameEntityFlow: Flow<NameEntity?>,
     allNameEntitiesFlow: Flow<List<NameEntity>>
