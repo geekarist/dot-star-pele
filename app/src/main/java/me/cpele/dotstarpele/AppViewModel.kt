@@ -30,72 +30,17 @@ class AppViewModel(private val application: Application) : ViewModel() {
         val requestedNameTagFlow = MutableStateFlow<Any?>(null)
     }
 
-    private val allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+    private val listingUimFlow = flowListingUim(
+        nameRatingEntitiesFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
+        listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
+        listingFilterStrFlow = State.listingFilterStrFlow
+    )
 
-    private val listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100)
-
-    private val listingUimFlow = db.nameRatingDao().findAll()
-        .flowOn(Dispatchers.IO)
-        .combine(listingDebouncedFilterStrFlow) { nameRatingEntities, filterStr ->
-            nameRatingEntities.filter { nameRatingEntity ->
-                isMatch(
-                    nameRatingEntity.nameEntity.text,
-                    filterStr
-                )
-            }
-        }.mapNotNull { nameRatingEntities -> // Sort by rank
-            nameRatingEntities
-                .sortedBy { it.nameEntity.gender }
-                .sortedBy { it.nameEntity.text }
-                .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
-        }.map { it.toUiModels() }
-        .flowOn(Dispatchers.Default)
-        .combine(State.listingFilterStrFlow) { listingItemUims, filterStr ->
-            ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
-        }.flowOn(Dispatchers.Default)
-
-    private val requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance<NameEntity?>()
-
-    private val proposalUimFlow = db.nameDao().flowUnrated()
-        .flowOn(Dispatchers.IO)
-        .map {
-            it.shuffled()
-        }
-        .flowOn(Dispatchers.Default)
-        .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
-            val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
-            requestedNameEntityList + unratedNameEntities
-        }
-        .combine(allNameEntitiesFlow) { nameToRateEntities, allNameEntities ->
-            nameToRateEntities to allNameEntities.size
-        }
-        .mapNotNull { (nameEntities, countAll) ->
-            nameEntities.takeIf { it.isNotEmpty() } to countAll
-        }
-        .filter { (unratedNameEntities, _) ->
-            unratedNameEntities != null
-        }
-        .map { (unratedNameEntities, countAll) ->
-            val nameEntity = unratedNameEntities?.getOrNull(0)
-            val countUnrated = unratedNameEntities?.size
-            Triple(nameEntity, countUnrated, countAll)
-        }
-        .map { (nameEntity, unratedCount, countAll) ->
-            if (nameEntity != null && unratedCount != null) {
-                RateUiModel.Ready(
-                    nameEntity.text,
-                    ratedCount = countAll - unratedCount,
-                    totalCount = countAll,
-                    currentNameTag = nameEntity.text to nameEntity.gender.name,
-                    gender = nameEntity.gender.toUiModel(),
-                )
-            } else {
-                null
-            }
-        }
-        .filterNotNull()
-        .onEach { logd { "Got proposal UI model: $it" } }
-        .flowOn(Dispatchers.Default)
+    private val proposalUimFlow = flowProposalUim(
+        unratedNamesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO),
+        requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance(),
+        allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+    )
 
     private val uiModelFlow = combine(
         listingUimFlow,
@@ -281,3 +226,70 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
         // Remove combined chars
         .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
 }
+
+private fun flowListingUim(
+    nameRatingEntitiesFlow: Flow<List<NameRatingEntity>>,
+    listingDebouncedFilterStrFlow: Flow<String?>,
+    listingFilterStrFlow: MutableStateFlow<String?>
+) = nameRatingEntitiesFlow
+    .combine(listingDebouncedFilterStrFlow) { nameRatingEntities, filterStr ->
+        nameRatingEntities.filter { nameRatingEntity ->
+            isMatch(
+                nameRatingEntity.nameEntity.text,
+                filterStr
+            )
+        }
+    }.mapNotNull { nameRatingEntities -> // Sort by rank
+        nameRatingEntities
+            .sortedBy { it.nameEntity.gender }
+            .sortedBy { it.nameEntity.text }
+            .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
+    }.map { it.toUiModels() }
+    .flowOn(Dispatchers.Default)
+    .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
+        ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
+    }.flowOn(Dispatchers.Default)
+
+private fun flowProposalUim(
+    unratedNamesFlow: Flow<List<NameEntity>>,
+    requestedNameEntityFlow: Flow<NameEntity?>,
+    allNameEntitiesFlow: Flow<List<NameEntity>>
+) = unratedNamesFlow
+    .map {
+        it.shuffled()
+    }
+    .flowOn(Dispatchers.Default)
+    .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
+        val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
+        requestedNameEntityList + unratedNameEntities
+    }
+    .combine(allNameEntitiesFlow) { nameToRateEntities, allNameEntities ->
+        nameToRateEntities to allNameEntities.size
+    }
+    .mapNotNull { (nameEntities, countAll) ->
+        nameEntities.takeIf { it.isNotEmpty() } to countAll
+    }
+    .filter { (unratedNameEntities, _) ->
+        unratedNameEntities != null
+    }
+    .map { (unratedNameEntities, countAll) ->
+        val nameEntity = unratedNameEntities?.getOrNull(0)
+        val countUnrated = unratedNameEntities?.size
+        Triple(nameEntity, countUnrated, countAll)
+    }
+    .map { (nameEntity, unratedCount, countAll) ->
+        if (nameEntity != null && unratedCount != null) {
+            RateUiModel.Ready(
+                nameEntity.text,
+                ratedCount = countAll - unratedCount,
+                totalCount = countAll,
+                currentNameTag = nameEntity.text to nameEntity.gender.name,
+                gender = nameEntity.gender.toUiModel(),
+            )
+        } else {
+            null
+        }
+    }
+    .filterNotNull()
+    .onEach { logd { "Got proposal UI model: $it" } }
+    .flowOn(Dispatchers.Default)
