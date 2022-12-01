@@ -255,10 +255,7 @@ private fun flowProposalUim(
     requestedNameEntityFlow: Flow<NameEntity?>,
     allNameEntitiesFlow: Flow<List<NameEntity>>
 ) = unratedNamesFlow
-    .map {
-        it.shuffled()
-    }
-    .flowOn(Dispatchers.Default)
+    .map { it.shuffled() }
     .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
         val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
         requestedNameEntityList + unratedNameEntities
