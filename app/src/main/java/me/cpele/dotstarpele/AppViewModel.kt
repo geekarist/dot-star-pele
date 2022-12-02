@@ -31,15 +31,15 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private val listingUimFlow = setUpListingUimFlow(
-        nameRatingEntitiesFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
+        nameRatingDtosFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
         listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
         listingFilterStrFlow = State.listingFilterStrFlow
     )
 
     private val proposalUimFlow = setUpProposalUimFlow(
         unratedNamesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO),
-        requestedNameEntityFlow = State.requestedNameTagFlow.filterIsInstance(),
-        allNameEntitiesFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+        requestedNameDtoFlow = State.requestedNameTagFlow.filterIsInstance(),
+        allNameDtosFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
     )
 
     private val uiModelFlow = combine(
@@ -53,8 +53,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
     init {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                populateDatabase(application, db, R.raw.names_boys, GenderEntity.Boy)
-                populateDatabase(application, db, R.raw.names_girls, GenderEntity.Girl)
+                populateDatabase(application, db, R.raw.names_boys, GenderDto.Boy)
+                populateDatabase(application, db, R.raw.names_girls, GenderDto.Girl)
             }
         }
     }
@@ -63,7 +63,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         context: Context,
         db: AppDb,
         @RawRes nameFileRes: Int,
-        genderEntity: GenderEntity
+        genderDto: GenderDto
     ) {
         context.resources.openRawResource(nameFileRes)
             .use { inputStream -> // Read file lines
@@ -72,12 +72,12 @@ class AppViewModel(private val application: Application) : ViewModel() {
             }
             .filterNot { it.isBlank() } // Filter blank lines
             .flatMap { it.split("""\s+""".toRegex()) } // One name per word
-            .map { nameStr -> // Create entities
-                NameEntity(text = nameStr, gender = genderEntity)
+            .map { nameStr -> // Create DTOs
+                NameDto(text = nameStr, gender = genderDto)
             }
-            .let { nameEntities -> // Insert entities
+            .let { nameDtos -> // Insert DTOs
                 val namesDao = db.nameDao()
-                namesDao.insertAll(nameEntities)
+                namesDao.insertAll(nameDtos)
             }
     }
 
@@ -91,16 +91,16 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleReviewEvent(event: Event.Review) {
-        val newNoteEntity = when (event) {
-            is Event.Review.Love -> NoteEntity.Love
-            is Event.Review.Like -> NoteEntity.Like
-            is Event.Review.Dislike -> NoteEntity.Dislike
-            is Event.Review.Unknown -> NoteEntity.Unknown
+        val newNoteDto = when (event) {
+            is Event.Review.Love -> NoteDto.Love
+            is Event.Review.Like -> NoteDto.Like
+            is Event.Review.Dislike -> NoteDto.Dislike
+            is Event.Review.Unknown -> NoteDto.Unknown
         }
         handleReview(
             nameText = event.nameText,
-            nameGender = GenderEntity.valueOf(event.nameGenderText),
-            newNoteEntity = newNoteEntity
+            nameGender = GenderDto.valueOf(event.nameGenderText),
+            newNoteDto = newNoteDto
         )
     }
 
@@ -110,10 +110,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
         State.requestedNameTagFlow.value = event.nameTag
 
         viewModelScope.launch(Dispatchers.IO) {
-            val nameEntity = event.nameTag as? NameEntity
+            val nameDto = event.nameTag as? NameDto
                 ?: error("Wrong name tag type for ${event.nameTag}")
             db.ratingDao()
-                .findByName(nameEntity.text, nameEntity.gender)
+                .findByName(nameDto.text, nameDto.gender)
                 ?.let {
                     db.ratingDao().remove(it)
                 }
@@ -126,18 +126,18 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private fun handleReview(
         nameText: String,
-        nameGender: GenderEntity,
-        newNoteEntity: NoteEntity
+        nameGender: GenderDto,
+        newNoteDto: NoteDto
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             // Update rating and insert
-            val nameEntity = db.nameDao().findOne(nameText, nameGender)
-            val ratingEntity = db.ratingDao().findByName(nameEntity.text, nameEntity.gender)
-            val newRatingEntity = ratingEntity?.copy(note = newNoteEntity) ?: RatingEntity(
-                note = newNoteEntity, nameText = nameEntity.text, nameGender = nameEntity.gender
+            val nameDto = db.nameDao().findOne(nameText, nameGender)
+            val ratingDto = db.ratingDao().findByName(nameDto.text, nameDto.gender)
+            val newRatingDto = ratingDto?.copy(note = newNoteDto) ?: RatingDto(
+                note = newNoteDto, nameText = nameDto.text, nameGender = nameDto.gender
             )
-            Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingEntity")
-            db.ratingDao().insert(newRatingEntity)
+            Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingDto")
+            db.ratingDao().insert(newRatingDto)
 
             // Clear any name that was requested for next rating
             State.requestedNameTagFlow.value = null
@@ -187,26 +187,26 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 }
 
-private fun List<NameRatingEntity>.toUiModels(): List<ListingItemUiModel> = map { it.toUiModel() }
+private fun List<NameRatingDto>.toUiModels(): List<ListingItemUiModel> = map { it.toUiModel() }
 
-private fun NameRatingEntity.toUiModel(): ListingItemUiModel =
+private fun NameRatingDto.toUiModel(): ListingItemUiModel =
     ListingItemUiModel(
-        firstName = nameEntity.text,
-        rating = ratingEntity?.note.toUiModel(),
-        gender = nameEntity.gender.toUiModel(),
-        nameTag = nameEntity,
+        firstName = nameDto.text,
+        rating = ratingDto?.note.toUiModel(),
+        gender = nameDto.gender.toUiModel(),
+        nameTag = nameDto,
     )
 
-private fun GenderEntity.toUiModel() = when (this) {
-    GenderEntity.Boy -> GenderUiModel.Boy
-    GenderEntity.Girl -> GenderUiModel.Girl
+private fun GenderDto.toUiModel() = when (this) {
+    GenderDto.Boy -> GenderUiModel.Boy
+    GenderDto.Girl -> GenderUiModel.Girl
 }
 
-private fun NoteEntity?.toUiModel(): RatingUiModel = when (this) {
-    NoteEntity.Dislike -> RatingUiModel.Dislike
-    NoteEntity.Like -> RatingUiModel.Like
-    NoteEntity.Love -> RatingUiModel.Love
-    NoteEntity.Unknown, null -> RatingUiModel.Unknown
+private fun NoteDto?.toUiModel(): RatingUiModel = when (this) {
+    NoteDto.Dislike -> RatingUiModel.Dislike
+    NoteDto.Like -> RatingUiModel.Like
+    NoteDto.Love -> RatingUiModel.Love
+    NoteDto.Unknown, null -> RatingUiModel.Unknown
 }
 
 private fun isMatch(name: String, filter: String?): Boolean {
@@ -228,22 +228,22 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
 }
 
 private fun setUpListingUimFlow(
-    nameRatingEntitiesFlow: Flow<List<NameRatingEntity>>,
+    nameRatingDtosFlow: Flow<List<NameRatingDto>>,
     listingDebouncedFilterStrFlow: Flow<String?>,
     listingFilterStrFlow: MutableStateFlow<String?>
-) = nameRatingEntitiesFlow
-    .combine(listingDebouncedFilterStrFlow) { nameRatingEntities, filterStr ->
-        nameRatingEntities.filter { nameRatingEntity ->
+) = nameRatingDtosFlow
+    .combine(listingDebouncedFilterStrFlow) { nameRatingDtos, filterStr ->
+        nameRatingDtos.filter { nameRatingDto ->
             isMatch(
-                nameRatingEntity.nameEntity.text,
+                nameRatingDto.nameDto.text,
                 filterStr
             )
         }
-    }.mapNotNull { nameRatingEntities -> // Sort by rank
-        nameRatingEntities
-            .sortedBy { it.nameEntity.gender }
-            .sortedBy { it.nameEntity.text }
-            .sortedBy { it.ratingEntity?.note?.rank ?: Int.MAX_VALUE }
+    }.mapNotNull { nameRatingDtos -> // Sort by rank
+        nameRatingDtos
+            .sortedBy { it.nameDto.gender }
+            .sortedBy { it.nameDto.text }
+            .sortedBy { it.ratingDto?.note?.rank ?: Int.MAX_VALUE }
     }.map { it.toUiModels() }
     .flowOn(Dispatchers.Default)
     .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
@@ -251,37 +251,37 @@ private fun setUpListingUimFlow(
     }.flowOn(Dispatchers.Default)
 
 private fun setUpProposalUimFlow(
-    unratedNamesFlow: Flow<List<NameEntity>>,
-    requestedNameEntityFlow: Flow<NameEntity?>,
-    allNameEntitiesFlow: Flow<List<NameEntity>>
+    unratedNamesFlow: Flow<List<NameDto>>,
+    requestedNameDtoFlow: Flow<NameDto?>,
+    allNameDtosFlow: Flow<List<NameDto>>
 ) = unratedNamesFlow
     .map { it.shuffled() }
-    .combine(requestedNameEntityFlow) { unratedNameEntities, requestedNameEntity ->
-        val requestedNameEntityList = requestedNameEntity?.let { listOf(it) } ?: emptyList()
-        requestedNameEntityList + unratedNameEntities
+    .combine(requestedNameDtoFlow) { unratedNameDtos, requestedNameDto ->
+        val requestedNameDtos = requestedNameDto?.let { listOf(it) } ?: emptyList()
+        requestedNameDtos + unratedNameDtos
     }
-    .combine(allNameEntitiesFlow) { nameToRateEntities, allNameEntities ->
-        nameToRateEntities to allNameEntities.size
+    .combine(allNameDtosFlow) { nameToRateDtos, allNameDtos ->
+        nameToRateDtos to allNameDtos.size
     }
-    .mapNotNull { (nameEntities, countAll) ->
-        nameEntities.takeIf { it.isNotEmpty() } to countAll
+    .mapNotNull { (nameDtos, countAll) ->
+        nameDtos.takeIf { it.isNotEmpty() } to countAll
     }
-    .filter { (unratedNameEntities, _) ->
-        unratedNameEntities != null
+    .filter { (unratedNameDtos, _) ->
+        unratedNameDtos != null
     }
-    .map { (unratedNameEntities, countAll) ->
-        val nameEntity = unratedNameEntities?.getOrNull(0)
-        val countUnrated = unratedNameEntities?.size
-        Triple(nameEntity, countUnrated, countAll)
+    .map { (unratedNameDtos, countAll) ->
+        val nameDto = unratedNameDtos?.getOrNull(0)
+        val countUnrated = unratedNameDtos?.size
+        Triple(nameDto, countUnrated, countAll)
     }
-    .map { (nameEntity, unratedCount, countAll) ->
-        if (nameEntity != null && unratedCount != null) {
+    .map { (nameDto, unratedCount, countAll) ->
+        if (nameDto != null && unratedCount != null) {
             RateUiModel.Ready(
-                nameEntity.text,
+                nameDto.text,
                 ratedCount = countAll - unratedCount,
                 totalCount = countAll,
-                currentNameTag = nameEntity.text to nameEntity.gender.name,
-                gender = nameEntity.gender.toUiModel(),
+                currentNameTag = nameDto.text to nameDto.gender.name,
+                gender = nameDto.gender.toUiModel(),
             )
         } else {
             null

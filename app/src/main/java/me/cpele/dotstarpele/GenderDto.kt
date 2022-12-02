@@ -1,5 +1,5 @@
 package me.cpele.dotstarpele
 
-enum class GenderEntity {
+enum class GenderDto {
     Boy, Girl
 }

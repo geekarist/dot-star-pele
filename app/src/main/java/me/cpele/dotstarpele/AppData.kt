@@ -3,7 +3,7 @@ package me.cpele.dotstarpele
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
-enum class NoteEntity(val rank: Int) {
+enum class NoteDto(val rank: Int) {
     Love(rank = 10),
     Like(rank = 20),
     Dislike(rank = 30),
@@ -11,7 +11,7 @@ enum class NoteEntity(val rank: Int) {
 }
 
 @Database(
-    entities = [NameEntity::class, RatingEntity::class], version = 2, exportSchema = true
+    entities = [NameDto::class, RatingDto::class], version = 2, exportSchema = true
 )
 abstract class AppDb : RoomDatabase() {
     abstract fun nameDao(): NameDao
@@ -22,13 +22,13 @@ abstract class AppDb : RoomDatabase() {
 @Dao
 interface RatingDao {
     @Query("SELECT * FROM rating WHERE nameText = :text AND nameGender = :gender")
-    fun findByName(text: String, gender: GenderEntity): RatingEntity?
+    fun findByName(text: String, gender: GenderDto): RatingDto?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(newRating: RatingEntity)
+    fun insert(newRating: RatingDto)
 
     @Delete
-    fun remove(entity: RatingEntity)
+    fun remove(rating: RatingDto)
 }
 
 @Dao
@@ -38,25 +38,25 @@ interface NameRatingDao {
                 "LEFT OUTER JOIN rating " +
                 "ON (text = rating.nameText AND gender = rating.nameGender)"
     )
-    fun findAll(): Flow<List<NameRatingEntity>>
+    fun findAll(): Flow<List<NameRatingDto>>
 }
 
-data class NameRatingEntity(
-    @Embedded val ratingEntity: RatingEntity?, @Embedded val nameEntity: NameEntity
+data class NameRatingDto(
+    @Embedded val ratingDto: RatingDto?, @Embedded val nameDto: NameDto
 )
 
 @Entity(
     tableName = "rating", foreignKeys = [ForeignKey(
-        entity = NameEntity::class,
+        entity = NameDto::class,
         parentColumns = ["text", "gender"],
         childColumns = ["nameText", "nameGender"]
     )]
 )
-data class RatingEntity(
+data class RatingDto(
     @PrimaryKey(autoGenerate = true) val key: Int = 0,
-    val note: NoteEntity,
+    val note: NoteDto,
     val nameText: String,
-    val nameGender: GenderEntity
+    val nameGender: GenderDto
 )
 
 const val FIND_ALL_NAMES = "SELECT * FROM name"
@@ -65,10 +65,10 @@ const val FIND_ALL_NAMES = "SELECT * FROM name"
 interface NameDao {
 
     @Query(FIND_ALL_NAMES)
-    fun findAll(): List<NameEntity>
+    fun findAll(): List<NameDto>
 
     @Query(FIND_ALL_NAMES)
-    fun flowAll(): Flow<List<NameEntity>>
+    fun flowAll(): Flow<List<NameDto>>
 
     @Query(
         "SELECT * FROM name "
@@ -77,17 +77,17 @@ interface NameDao {
                 + "WHERE rating.note IS NULL "
                 + "OR rating.note = 'Unknown'"
     )
-    fun flowUnrated(): Flow<List<NameEntity>>
+    fun flowUnrated(): Flow<List<NameDto>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(names: List<NameEntity>)
+    fun insertAll(names: List<NameDto>)
 
     @Query("SELECT * FROM name WHERE text = :text")
-    fun findByText(text: String): NameEntity
+    fun findByText(text: String): NameDto
 
     @Query("SELECT * FROM name WHERE text = :text AND gender = :gender")
-    fun findOne(text: String, gender: GenderEntity): NameEntity
+    fun findOne(text: String, gender: GenderDto): NameDto
 }
 
 @Entity(tableName = "name", primaryKeys = ["text", "gender"])
-data class NameEntity(val text: String, val gender: GenderEntity)
+data class NameDto(val text: String, val gender: GenderDto)
