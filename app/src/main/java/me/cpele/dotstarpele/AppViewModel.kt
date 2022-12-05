@@ -25,7 +25,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private val db = Room.databaseBuilder(application, AppDb::class.java, "app-db").build()
 
     private object State {
-        val screenUimFlow = MutableStateFlow(AppUiModel.Screen.Home)
+        val screenUimFlow = MutableStateFlow<AppUiModel.Screen>(AppUiModel.Screen.Home)
         val listingFilterStrFlow = MutableStateFlow<String?>(null)
         val requestedNameTagFlow = MutableStateFlow<Any?>(null)
     }
@@ -105,7 +105,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
-        State.screenUimFlow.value = AppUiModel.Screen.Proposal
+        State.screenUimFlow.value = AppUiModel.Screen.Proposal(
+            nameTag = event.nameTag,
+            previous = AppUiModel.Screen.Listing,
+            next = AppUiModel.Screen.Listing
+        )
 
         State.requestedNameTagFlow.value = event.nameTag
 

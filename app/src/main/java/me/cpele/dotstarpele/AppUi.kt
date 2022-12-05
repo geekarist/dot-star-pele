@@ -47,8 +47,18 @@ enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
 data class AppUiModel(
     val myNames: ListingUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
 ) : Serializable {
-    enum class Screen {
-        Home, Proposal, Listing
+
+    sealed class Screen {
+
+        object Home : Screen()
+
+        data class Proposal(
+            val nameTag: Any? = null,
+            val previous: Screen = Home,
+            val next: Screen = Proposal()
+        ) : Screen()
+
+        object Listing : Screen()
     }
 }
 
@@ -76,7 +86,7 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
-        AppUiModel.Screen.Proposal -> Proposal(uim = appUim.rate, dispatch = dispatch)
+        is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.rate, dispatch = dispatch)
         AppUiModel.Screen.Listing -> Listing(uim = appUim.myNames, dispatch = dispatch)
     }
 }
@@ -95,7 +105,9 @@ private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
                 space = 8.dp, alignment = Alignment.CenterVertically
             ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Proposal)) }) {
+            Button(onClick = {
+                dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Proposal()))
+            }) {
                 Text(text = stringResource(R.string.home_rate_button))
             }
             Button(onClick = { dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Listing)) }) {
