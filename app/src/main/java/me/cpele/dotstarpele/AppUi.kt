@@ -55,7 +55,7 @@ data class AppUiModel(
         data class Proposal(
             val nameTag: Any? = null,
             val previous: Screen = Home,
-            val next: Screen = Proposal()
+            val next: Screen? = null
         ) : Screen()
 
         object Listing : Screen()
