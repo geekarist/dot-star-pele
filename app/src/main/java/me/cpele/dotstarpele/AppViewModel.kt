@@ -27,9 +27,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
     private object State {
         val screenUimFlow = MutableStateFlow<AppUiModel.Screen>(AppUiModel.Screen.Home)
         val listingFilterStrFlow = MutableStateFlow<String?>(null)
-        val requestedNameTagFlow = MutableStateFlow<Any?>(null)
     }
 
+    // TODO: define `Distributary`, `Tributary`, `Delta`? interfaces, `compound` function?
     private val listingUimFlow = setUpListingUimFlow(
         nameRatingDtosFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
         listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
@@ -38,7 +38,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val proposalUimFlow = setUpProposalUimFlow(
         unratedNamesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO),
-        requestedNameDtoFlow = State.requestedNameTagFlow.filterIsInstance(),
         allNameDtosFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
     )
 
@@ -110,18 +109,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             previous = AppUiModel.Screen.Listing,
             next = AppUiModel.Screen.Listing
         )
-
-        State.requestedNameTagFlow.value = event.nameTag
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val nameDto = event.nameTag as? NameDto
-                ?: error("Wrong name tag type for ${event.nameTag}")
-            db.ratingDao()
-                .findByName(nameDto.text, nameDto.gender)
-                ?.let {
-                    db.ratingDao().remove(it)
-                }
-        }
     }
 
     private fun handleFilterName(text: String) {
@@ -142,9 +129,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             )
             Log.d(this@AppViewModel::class.simpleName, "Inserting rating: $newRatingDto")
             db.ratingDao().insert(newRatingDto)
-
-            // Clear any name that was requested for next rating
-            State.requestedNameTagFlow.value = null
         }
     }
 
@@ -256,14 +240,9 @@ private fun setUpListingUimFlow(
 
 private fun setUpProposalUimFlow(
     unratedNamesFlow: Flow<List<NameDto>>,
-    requestedNameDtoFlow: Flow<NameDto?>,
     allNameDtosFlow: Flow<List<NameDto>>
 ) = unratedNamesFlow
     .map { it.shuffled() }
-    .combine(requestedNameDtoFlow) { unratedNameDtos, requestedNameDto ->
-        val requestedNameDtos = requestedNameDto?.let { listOf(it) } ?: emptyList()
-        requestedNameDtos + unratedNameDtos
-    }
     .combine(allNameDtosFlow) { nameToRateDtos, allNameDtos ->
         nameToRateDtos to allNameDtos.size
     }
