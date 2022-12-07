@@ -45,7 +45,7 @@ enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
 }
 
 data class AppUiModel(
-    val myNames: ListingUiModel, val screen: Screen = Screen.Home, val rate: RateUiModel
+    val myNames: ListingUiModel, val screen: Screen = Screen.Home, val proposal: ProposalUiModel
 ) : Serializable {
 
     sealed class Screen {
@@ -62,15 +62,15 @@ data class AppUiModel(
     }
 }
 
-sealed interface RateUiModel {
-    object Loading : RateUiModel
+sealed interface ProposalUiModel {
+    object Loading : ProposalUiModel
     data class Ready(
         val currentName: String,
         val currentNameTag: Pair<String, String>,
         val ratedCount: Int,
         val totalCount: Int,
         val gender: GenderUiModel,
-    ) : RateUiModel
+    ) : ProposalUiModel
 }
 
 data class ListingUiModel(val names: List<ListingItemUiModel> = listOf(), val nameFilter: String)
@@ -86,7 +86,7 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
-        is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.rate, dispatch = dispatch)
+        is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.proposal, dispatch = dispatch)
         AppUiModel.Screen.Listing -> Listing(uim = appUim.myNames, dispatch = dispatch)
     }
 }
@@ -121,7 +121,7 @@ private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
 @Composable
 fun Proposal(
     modifier: Modifier = Modifier,
-    uim: RateUiModel,
+    uim: ProposalUiModel,
     dispatch: (AppViewModel.Event) -> Unit,
 ) {
     SideEffect {
@@ -138,8 +138,8 @@ fun Proposal(
             style = MaterialTheme.typography.headlineMedium,
         )
         when (uim) {
-            is RateUiModel.Loading -> Text(text = "Loading names...")
-            is RateUiModel.Ready -> Column(
+            is ProposalUiModel.Loading -> Text(text = "Loading names...")
+            is ProposalUiModel.Ready -> Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,

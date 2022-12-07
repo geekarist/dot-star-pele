@@ -46,7 +46,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         proposalUimFlow,
         State.screenUimFlow
     ) { myNamesUim, rateUim, screenUim ->
-        AppUiModel(myNames = myNamesUim, rate = rateUim, screen = screenUim)
+        AppUiModel(myNames = myNamesUim, proposal = rateUim, screen = screenUim)
     }
 
     init {
@@ -126,7 +126,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            myNames = ListingUiModel(emptyList(), ""), rate = RateUiModel.Loading
+            myNames = ListingUiModel(emptyList(), ""), proposal = ProposalUiModel.Loading
         )
     )
 
@@ -249,7 +249,7 @@ private fun setUpProposalUimFlow(
     }
     .map { (nameDto, unratedCount, countAll) ->
         if (nameDto != null && unratedCount != null) {
-            RateUiModel.Ready(
+            ProposalUiModel.Ready(
                 nameDto.text,
                 ratedCount = countAll - unratedCount,
                 totalCount = countAll,
