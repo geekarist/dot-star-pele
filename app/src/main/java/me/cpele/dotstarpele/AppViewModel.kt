@@ -85,7 +85,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             is Event.Navigation -> State.screenUimFlow.value = event.screen
             is Event.Review -> handleReviewEvent(event)
             is Event.Listing.Filter -> handleFilterName(event.text)
-            is Event.Listing.ItemClicked -> handleListingItemClicked(event)
         }
     }
 
@@ -100,14 +99,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
             nameText = event.nameText,
             nameGender = GenderDto.valueOf(event.nameGenderText),
             newNoteDto = newNoteDto
-        )
-    }
-
-    private fun handleListingItemClicked(event: Event.Listing.ItemClicked) {
-        State.screenUimFlow.value = AppUiModel.Screen.Proposal(
-            nameTag = event.nameTag,
-            previous = AppUiModel.Screen.Listing,
-            next = AppUiModel.Screen.Listing
         )
     }
 
@@ -170,7 +161,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
         sealed interface Listing : Event {
             data class Filter(val text: String) : Listing
-            data class ItemClicked(val nameTag: Any) : Listing
         }
     }
 }

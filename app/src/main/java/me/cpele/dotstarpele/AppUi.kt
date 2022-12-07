@@ -280,7 +280,15 @@ private fun ListingItem(
         )
     }
     Card(onClick = {
-        dispatch(AppViewModel.Event.Listing.ItemClicked(nameTag = itemUim.nameTag))
+        dispatch(
+            AppViewModel.Event.Navigation(
+                AppUiModel.Screen.Proposal(
+                    nameTag = itemUim.nameTag,
+                    previous = AppUiModel.Screen.Listing,
+                    next = AppUiModel.Screen.Listing
+                )
+            )
+        )
     }) {
         Row(Modifier.padding(16.dp)) {
             Image(
