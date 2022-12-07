@@ -45,8 +45,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
         listingUimFlow,
         proposalUimFlow,
         State.screenUimFlow
-    ) { myNamesUim, rateUim, screenUim ->
-        AppUiModel(myNames = myNamesUim, proposal = rateUim, screen = screenUim)
+    ) { listingUim, proposalUim, screenUim ->
+        AppUiModel(listing = listingUim, proposal = proposalUim, screen = screenUim)
     }
 
     init {
@@ -126,7 +126,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            myNames = ListingUiModel(emptyList(), ""), proposal = ProposalUiModel.Loading
+            listing = ListingUiModel(emptyList(), ""), proposal = ProposalUiModel.Loading
         )
     )
 

@@ -45,7 +45,7 @@ enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
 }
 
 data class AppUiModel(
-    val myNames: ListingUiModel, val screen: Screen = Screen.Home, val proposal: ProposalUiModel
+    val listing: ListingUiModel, val screen: Screen = Screen.Home, val proposal: ProposalUiModel
 ) : Serializable {
 
     sealed class Screen {
@@ -87,7 +87,7 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
         is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.proposal, dispatch = dispatch)
-        AppUiModel.Screen.Listing -> Listing(uim = appUim.myNames, dispatch = dispatch)
+        AppUiModel.Screen.Listing -> Listing(uim = appUim.listing, dispatch = dispatch)
     }
 }
 
