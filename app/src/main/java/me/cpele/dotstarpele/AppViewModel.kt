@@ -38,7 +38,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private val proposalUimFlow = setUpProposalUimFlow(
         unratedNamesFlow = db.nameDao().flowUnrated().flowOn(Dispatchers.IO),
-        allNameDtosFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO)
+        allNameDtosFlow = db.nameDao().flowAll().flowOn(Dispatchers.IO),
+        screenFlow = State.screenUimFlow
     )
 
     private val uiModelFlow = combine(
@@ -230,11 +231,15 @@ private fun setUpListingUimFlow(
 
 private fun setUpProposalUimFlow(
     unratedNamesFlow: Flow<List<NameDto>>,
-    allNameDtosFlow: Flow<List<NameDto>>
+    allNameDtosFlow: Flow<List<NameDto>>,
+    screenFlow: Flow<AppUiModel.Screen>
 ) = unratedNamesFlow
     .map { it.shuffled() }
-    .combine(allNameDtosFlow) { nameToRateDtos, allNameDtos ->
-        nameToRateDtos to allNameDtos.size
+    .combine(screenFlow) { unratedNameDtos, screenUim ->
+        computeProposedNames(unratedNameDtos, screenUim)
+    }
+    .combine(allNameDtosFlow) { proposedNameDtos, allNameDtos ->
+        proposedNameDtos to allNameDtos.size
     }
     .mapNotNull { (nameDtos, countAll) ->
         nameDtos.takeIf { it.isNotEmpty() } to countAll
@@ -263,3 +268,10 @@ private fun setUpProposalUimFlow(
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
+
+fun computeProposedNames(
+    unratedNameDtos: List<NameDto>,
+    screenUim: AppUiModel.Screen
+): List<NameDto> {
+    TODO("Not yet implemented")
+}
