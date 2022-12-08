@@ -269,9 +269,10 @@ private fun setUpProposalUimFlow(
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
 
-fun computeProposedNames(
-    unratedNameDtos: List<NameDto>,
-    screenUim: AppUiModel.Screen
-): List<NameDto> {
-    TODO("Not yet implemented")
-}
+fun computeProposedNames(unratedNameDtos: List<NameDto>, screenUim: AppUiModel.Screen) =
+    if (screenUim is AppUiModel.Screen.Proposal && screenUim.nameTag is NameDto) {
+        listOf(screenUim.nameTag) + (unratedNameDtos - screenUim.nameTag)
+    } else {
+        unratedNameDtos
+    }
+
