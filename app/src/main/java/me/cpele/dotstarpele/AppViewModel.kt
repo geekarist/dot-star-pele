@@ -214,22 +214,30 @@ private fun setUpListingUimFlow(
     listingFilterStrFlow: MutableStateFlow<String?>
 ) = nameRatingDtosFlow
     .combine(listingDebouncedFilterStrFlow) { nameRatingDtos, filterStr ->
-        nameRatingDtos.filter { nameRatingDto ->
-            isMatch(
-                nameRatingDto.nameDto.text,
-                filterStr
-            )
-        }
-    }.mapNotNull { nameRatingDtos -> // Sort by rank
-        nameRatingDtos
-            .sortedBy { it.nameDto.gender }
-            .sortedBy { it.nameDto.text }
-            .sortedBy { it.ratingDto?.note?.rank ?: Int.MAX_VALUE }
+        filterNames(nameRatingDtos, filterStr)
+    }.mapNotNull { nameRatingDtos ->
+        sort(nameRatingDtos)
     }.map { it.toUiModels() }
     .flowOn(Dispatchers.Default)
     .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
         ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
     }.flowOn(Dispatchers.Default)
+
+private fun sort(nameRatingDtos: List<NameRatingDto>) =
+    nameRatingDtos
+        .sortedBy { it.nameDto.gender }
+        .sortedBy { it.nameDto.text }
+        .sortedBy { it.ratingDto?.note?.rank ?: Int.MAX_VALUE }
+
+private fun filterNames(
+    nameRatingDtos: List<NameRatingDto>,
+    filterStr: String?
+) = nameRatingDtos.filter { nameRatingDto ->
+    isMatch(
+        nameRatingDto.nameDto.text,
+        filterStr
+    )
+}
 
 private fun setUpProposalUimFlow(
     unratedNamesFlow: Flow<List<NameDto>>,
@@ -259,23 +267,31 @@ private fun setUpProposalUimFlow(
         Quintet(nameDto, countUnrated, countAll, nextScreen, prevScreen)
     }
     .map { (nameDto, proposedCount, countAll, nextScreen, prevScreen) ->
-        if (nameDto != null && proposedCount != null) {
-            ProposalUiModel.Ready(
-                nameDto.text,
-                ratedCount = countAll - proposedCount,
-                totalCount = countAll,
-                currentNameTag = nameDto.text to nameDto.gender.name,
-                gender = nameDto.gender.toUiModel(),
-                nextScreen = nextScreen,
-                prevScreen = prevScreen
-            )
-        } else {
-            null
-        }
+        modelUi(nameDto, proposedCount, countAll, nextScreen, prevScreen)
     }
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
+
+private fun modelUi(
+    nameDto: NameDto?,
+    proposedCount: Int?,
+    countAll: Int,
+    nextScreen: AppUiModel.Screen?,
+    prevScreen: AppUiModel.Screen
+) = if (nameDto != null && proposedCount != null) {
+    ProposalUiModel.Ready(
+        nameDto.text,
+        ratedCount = countAll - proposedCount,
+        totalCount = countAll,
+        currentNameTag = nameDto.text to nameDto.gender.name,
+        gender = nameDto.gender.toUiModel(),
+        nextScreen = nextScreen,
+        prevScreen = prevScreen
+    )
+} else {
+    null
+}
 
 data class Quintet<out A, out B, out C, out D, out E>(
     val first: A,
