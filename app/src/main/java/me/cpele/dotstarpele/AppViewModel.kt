@@ -100,7 +100,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         handleReview(
             nameText = event.nameText,
             nameGender = GenderDto.valueOf(event.nameGenderText),
-            newNoteDto = newNoteDto
+            newNoteDto = newNoteDto,
         )
     }
 
@@ -255,12 +255,15 @@ private fun setUpProposalUimFlow(
     }
     .map { (nameDto, unratedCount, countAll) ->
         if (nameDto != null && unratedCount != null) {
+            val screen =
+                AppUiModel.Screen.Proposal(next = AppUiModel.Screen.Listing)
             ProposalUiModel.Ready(
                 nameDto.text,
                 ratedCount = countAll - unratedCount,
                 totalCount = countAll,
                 currentNameTag = nameDto.text to nameDto.gender.name,
                 gender = nameDto.gender.toUiModel(),
+                nextScreen = screen.next,
             )
         } else {
             null

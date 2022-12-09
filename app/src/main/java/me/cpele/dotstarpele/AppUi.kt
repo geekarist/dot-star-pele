@@ -70,6 +70,7 @@ sealed interface ProposalUiModel {
         val ratedCount: Int,
         val totalCount: Int,
         val gender: GenderUiModel,
+        val nextScreen: AppUiModel.Screen? = null
     ) : ProposalUiModel
 }
 
