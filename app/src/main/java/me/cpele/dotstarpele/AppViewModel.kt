@@ -90,6 +90,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleReviewEvent(event: Event.Review) {
+        logd { "Handling review event: $event" }
         val newNoteDto = when (event) {
             is Event.Review.Love -> NoteDto.Love
             is Event.Review.Like -> NoteDto.Like
@@ -236,7 +237,7 @@ private fun setUpProposalUimFlow(
 ) = unratedNamesFlow
     .map { it.shuffled() }
     .combine(screenFlow) { unratedNameDtos, screenUim ->
-        computeProposedNames(unratedNameDtos, screenUim)
+        proposeNames(unratedNameDtos, screenUim)
     }
     .combine(allNameDtosFlow) { proposedNameDtos, allNameDtos ->
         proposedNameDtos to allNameDtos.size
@@ -269,7 +270,7 @@ private fun setUpProposalUimFlow(
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
 
-fun computeProposedNames(unratedNameDtos: List<NameDto>, screenUim: AppUiModel.Screen) =
+fun proposeNames(unratedNameDtos: List<NameDto>, screenUim: AppUiModel.Screen) =
     if (screenUim is AppUiModel.Screen.Proposal && screenUim.nameTag is NameDto) {
         listOf(screenUim.nameTag) + (unratedNameDtos - screenUim.nameTag)
     } else {
