@@ -63,7 +63,10 @@ data class AppUiModel(
 }
 
 sealed interface ProposalUiModel {
-    object Loading : ProposalUiModel
+    val prevScreen: AppUiModel.Screen
+
+    data class Loading(override val prevScreen: AppUiModel.Screen) : ProposalUiModel
+
     data class Ready(
         val currentName: String,
         val currentNameTag: Pair<String, String>,
@@ -71,7 +74,7 @@ sealed interface ProposalUiModel {
         val totalCount: Int,
         val gender: GenderUiModel,
         val nextScreen: AppUiModel.Screen? = null,
-        val prevScreen: AppUiModel.Screen
+        override val prevScreen: AppUiModel.Screen
     ) : ProposalUiModel
 }
 
@@ -133,7 +136,7 @@ fun Proposal(
         modifier = modifier.padding(16.dp)
     ) {
         BackHandler(onBack = {
-            dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
+            dispatch(AppViewModel.Event.Navigation(uim.prevScreen))
         })
         Text(
             text = stringResource(R.string.rate_head),

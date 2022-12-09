@@ -128,7 +128,8 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            listing = ListingUiModel(emptyList(), ""), proposal = ProposalUiModel.Loading
+            listing = ListingUiModel(emptyList(), ""),
+            proposal = ProposalUiModel.Loading(AppUiModel.Screen.Home)
         )
     )
 
