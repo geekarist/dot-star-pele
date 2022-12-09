@@ -245,21 +245,21 @@ private fun setUpProposalUimFlow(
     .mapNotNull { (nameDtos, countAll) ->
         nameDtos.takeIf { it.isNotEmpty() } to countAll
     }
-    .filter { (unratedNameDtos, _) ->
-        unratedNameDtos != null
+    .filter { (proposedNameDtos, _) ->
+        proposedNameDtos != null
     }
-    .map { (unratedNameDtos, countAll) ->
-        val nameDto = unratedNameDtos?.getOrNull(0)
-        val countUnrated = unratedNameDtos?.size
+    .map { (proposedNameDtos, countAll) ->
+        val nameDto = proposedNameDtos?.getOrNull(0)
+        val countUnrated = proposedNameDtos?.size
         Triple(nameDto, countUnrated, countAll)
     }
-    .map { (nameDto, unratedCount, countAll) ->
-        if (nameDto != null && unratedCount != null) {
+    .map { (nameDto, proposedCount, countAll) ->
+        if (nameDto != null && proposedCount != null) {
             val screen =
                 AppUiModel.Screen.Proposal(next = AppUiModel.Screen.Listing)
             ProposalUiModel.Ready(
                 nameDto.text,
-                ratedCount = countAll - unratedCount,
+                ratedCount = countAll - proposedCount,
                 totalCount = countAll,
                 currentNameTag = nameDto.text to nameDto.gender.name,
                 gender = nameDto.gender.toUiModel(),
