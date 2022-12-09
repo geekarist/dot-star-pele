@@ -218,7 +218,6 @@ private fun setUpListingUimFlow(
     }.mapNotNull { nameRatingDtos ->
         sort(nameRatingDtos)
     }.map { it.toUiModels() }
-    .flowOn(Dispatchers.Default)
     .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
         ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
     }.flowOn(Dispatchers.Default)
