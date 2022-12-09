@@ -244,22 +244,15 @@ private fun setUpProposalUimFlow(
     screenFlow: Flow<AppUiModel.Screen>
 ) = unratedNamesFlow
     .map { it.shuffled() }
-    .combine(screenFlow) { unratedNameDtos, screenUim ->
-        Triple(
-            proposeNames(unratedNameDtos, screenUim),
+    .combine(screenFlow, allNameDtosFlow) { shuffledUnratedNameDtos, screenUim, allNameDtos ->
+        Quartet(
+            proposeNames(shuffledUnratedNameDtos, screenUim).takeIf { it.isNotEmpty() },
+            allNameDtos.size,
             identifyNextScreen(screenUim),
             identifyPrevScreen(screenUim)
         )
     }
-    .combine(allNameDtosFlow) { (proposedNameDtos, nextScreen, prevScreen), allNameDtos ->
-        Quartet(proposedNameDtos, allNameDtos.size, nextScreen, prevScreen)
-    }
-    .mapNotNull { (nameDtos, countAll, nextScreen, prevScreen) ->
-        Quartet(nameDtos.takeIf { it.isNotEmpty() }, countAll, nextScreen, prevScreen)
-    }
-    .filter { (proposedNameDtos, _, _) ->
-        proposedNameDtos != null
-    }
+    .filter { (proposedNameDtos, _, _, _) -> proposedNameDtos != null }
     .map { (proposedNameDtos, countAll, nextScreen, prevScreen) ->
         val nameDto = proposedNameDtos?.getOrNull(0)
         val countUnrated = proposedNameDtos?.size
@@ -271,6 +264,12 @@ private fun setUpProposalUimFlow(
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
+
+inline fun <reified T1, reified T2, reified T3, R> Flow<T1>.combine(
+    flow2: Flow<T2>,
+    flow3: Flow<T3>,
+    noinline transform: suspend (T1, T2, T3) -> R
+): Flow<R> = combine(this, flow2, flow3, transform)
 
 private fun modelUi(
     nameDto: NameDto?,
