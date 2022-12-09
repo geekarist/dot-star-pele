@@ -237,23 +237,27 @@ private fun setUpProposalUimFlow(
 ) = unratedNamesFlow
     .map { it.shuffled() }
     .combine(screenFlow) { unratedNameDtos, screenUim ->
-        proposeNames(unratedNameDtos, screenUim) to identifyNextScreen(screenUim)
+        Triple(
+            proposeNames(unratedNameDtos, screenUim),
+            identifyNextScreen(screenUim),
+            identifyPrevScreen(screenUim)
+        )
     }
-    .combine(allNameDtosFlow) { (proposedNameDtos, nextScreen), allNameDtos ->
-        Triple(proposedNameDtos, allNameDtos.size, nextScreen)
+    .combine(allNameDtosFlow) { (proposedNameDtos, nextScreen, prevScreen), allNameDtos ->
+        Quartet(proposedNameDtos, allNameDtos.size, nextScreen, prevScreen)
     }
-    .mapNotNull { (nameDtos, countAll, nextScreen) ->
-        Triple(nameDtos.takeIf { it.isNotEmpty() }, countAll, nextScreen)
+    .mapNotNull { (nameDtos, countAll, nextScreen, prevScreen) ->
+        Quartet(nameDtos.takeIf { it.isNotEmpty() }, countAll, nextScreen, prevScreen)
     }
     .filter { (proposedNameDtos, _, _) ->
         proposedNameDtos != null
     }
-    .map { (proposedNameDtos, countAll, nextScreen) ->
+    .map { (proposedNameDtos, countAll, nextScreen, prevScreen) ->
         val nameDto = proposedNameDtos?.getOrNull(0)
         val countUnrated = proposedNameDtos?.size
-        Quartet(nameDto, countUnrated, countAll, nextScreen)
+        Quintet(nameDto, countUnrated, countAll, nextScreen, prevScreen)
     }
-    .map { (nameDto, proposedCount, countAll, nextScreen) ->
+    .map { (nameDto, proposedCount, countAll, nextScreen, prevScreen) ->
         if (nameDto != null && proposedCount != null) {
             ProposalUiModel.Ready(
                 nameDto.text,
@@ -262,6 +266,7 @@ private fun setUpProposalUimFlow(
                 currentNameTag = nameDto.text to nameDto.gender.name,
                 gender = nameDto.gender.toUiModel(),
                 nextScreen = nextScreen,
+                prevScreen = prevScreen
             )
         } else {
             null
@@ -270,6 +275,21 @@ private fun setUpProposalUimFlow(
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
+
+data class Quintet<out A, out B, out C, out D, out E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
+)
+
+fun identifyPrevScreen(screenUim: AppUiModel.Screen) =
+    if (screenUim is AppUiModel.Screen.Proposal) {
+        screenUim.previous
+    } else {
+        AppUiModel.Screen.Home
+    }
 
 data class Quartet<out A, out B, out C, out D>(
     val first: A,
