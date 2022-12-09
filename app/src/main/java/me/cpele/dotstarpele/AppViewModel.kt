@@ -237,33 +237,31 @@ private fun setUpProposalUimFlow(
 ) = unratedNamesFlow
     .map { it.shuffled() }
     .combine(screenFlow) { unratedNameDtos, screenUim ->
-        proposeNames(unratedNameDtos, screenUim)
+        proposeNames(unratedNameDtos, screenUim) to identifyNextScreen(screenUim)
     }
-    .combine(allNameDtosFlow) { proposedNameDtos, allNameDtos ->
-        proposedNameDtos to allNameDtos.size
+    .combine(allNameDtosFlow) { (proposedNameDtos, nextScreen), allNameDtos ->
+        Triple(proposedNameDtos, allNameDtos.size, nextScreen)
     }
-    .mapNotNull { (nameDtos, countAll) ->
-        nameDtos.takeIf { it.isNotEmpty() } to countAll
+    .mapNotNull { (nameDtos, countAll, nextScreen) ->
+        Triple(nameDtos.takeIf { it.isNotEmpty() }, countAll, nextScreen)
     }
-    .filter { (proposedNameDtos, _) ->
+    .filter { (proposedNameDtos, _, _) ->
         proposedNameDtos != null
     }
-    .map { (proposedNameDtos, countAll) ->
+    .map { (proposedNameDtos, countAll, nextScreen) ->
         val nameDto = proposedNameDtos?.getOrNull(0)
         val countUnrated = proposedNameDtos?.size
-        Triple(nameDto, countUnrated, countAll)
+        Quartet(nameDto, countUnrated, countAll, nextScreen)
     }
-    .map { (nameDto, proposedCount, countAll) ->
+    .map { (nameDto, proposedCount, countAll, nextScreen) ->
         if (nameDto != null && proposedCount != null) {
-            val screen =
-                AppUiModel.Screen.Proposal(next = AppUiModel.Screen.Listing)
             ProposalUiModel.Ready(
                 nameDto.text,
                 ratedCount = countAll - proposedCount,
                 totalCount = countAll,
                 currentNameTag = nameDto.text to nameDto.gender.name,
                 gender = nameDto.gender.toUiModel(),
-                nextScreen = screen.next,
+                nextScreen = nextScreen,
             )
         } else {
             null
@@ -272,6 +270,20 @@ private fun setUpProposalUimFlow(
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
     .flowOn(Dispatchers.Default)
+
+data class Quartet<out A, out B, out C, out D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D
+)
+
+fun identifyNextScreen(screenUim: AppUiModel.Screen): AppUiModel.Screen? =
+    if (screenUim is AppUiModel.Screen.Proposal) {
+        screenUim.next
+    } else {
+        null
+    }
 
 fun proposeNames(unratedNameDtos: List<NameDto>, screenUim: AppUiModel.Screen) =
     if (screenUim is AppUiModel.Screen.Proposal && screenUim.nameTag is NameDto) {
