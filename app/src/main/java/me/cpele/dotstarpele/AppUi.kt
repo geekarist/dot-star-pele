@@ -172,6 +172,9 @@ fun Proposal(
                             nameText = key1, nameGenderText = key2
                         )
                     )
+                    uim.nextScreen?.let { nextScreen ->
+                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+                    }
                 }) {
                     Text(text = RatingUiModel.Love.emoji)
                 }
@@ -183,6 +186,9 @@ fun Proposal(
                             nameText = key1, nameGenderText = key2
                         )
                     )
+                    uim.nextScreen?.let { nextScreen ->
+                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+                    }
                 }) {
                     Text(text = RatingUiModel.Like.emoji)
                 }
@@ -194,6 +200,9 @@ fun Proposal(
                             nameText = key1, nameGenderText = key2
                         )
                     )
+                    uim.nextScreen?.let { nextScreen ->
+                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+                    }
                 }) {
                     Text(text = RatingUiModel.Dislike.emoji)
                 }
@@ -205,6 +214,9 @@ fun Proposal(
                             nameText = key1, nameGenderText = key2
                         )
                     )
+                    uim.nextScreen?.let { nextScreen ->
+                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+                    }
                 }) {
                     Text(text = RatingUiModel.Unknown.emoji)
                 }
