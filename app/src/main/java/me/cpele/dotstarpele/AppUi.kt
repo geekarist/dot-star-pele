@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -89,12 +90,21 @@ inline fun logd(provideMsg: () -> String) {
 @Composable
 fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     logd { "Recomposing UI model" }
+    val appState = remember { AppState() }
     when (appUim.screen) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
         is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.proposal, dispatch = dispatch)
-        AppUiModel.Screen.Listing -> Listing(uim = appUim.listing, dispatch = dispatch)
+        AppUiModel.Screen.Listing -> Listing(
+            uim = appUim.listing,
+            state = appState.listingState,
+            dispatch = dispatch
+        )
     }
 }
+
+data class AppState(val listingState: ListingState = ListingState())
+
+data class ListingState(val lazyListState: LazyListState = LazyListState())
 
 @Composable
 private fun Home(dispatch: (AppViewModel.Event) -> Unit) {
@@ -232,16 +242,23 @@ fun Proposal(
 
 @Composable
 fun Listing(
-    modifier: Modifier = Modifier, uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit
+    modifier: Modifier = Modifier,
+    state: ListingState,
+    uim: ListingUiModel,
+    dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
         ListingControls(uim, dispatch)
-        ListingBody(uim, dispatch)
+        ListingBody(uim, state, dispatch)
     }
 }
 
 @Composable
-private fun ListingBody(uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit) {
+private fun ListingBody(
+    uim: ListingUiModel,
+    state: ListingState,
+    dispatch: (AppViewModel.Event) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -249,6 +266,7 @@ private fun ListingBody(uim: ListingUiModel, dispatch: (AppViewModel.Event) -> U
     ) {
         val itemUiModels = uim.names
         LazyColumn(
+            state = state.lazyListState,
             verticalArrangement = Arrangement.spacedBy(
                 8.dp, alignment = Alignment.Top
             ),
