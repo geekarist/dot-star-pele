@@ -225,7 +225,7 @@ private fun setUpListingUimFlow(
 private fun sort(nameRatingDtos: List<NameRatingDto>) =
     nameRatingDtos
         .sortedBy { it.nameDto.gender }
-        .sortedBy { unaccented(it.nameDto.text) }
+        .sortedBy { it.nameDto.text }
         .sortedBy { it.ratingDto?.note?.rank ?: Int.MAX_VALUE }
 
 private fun filterNames(
