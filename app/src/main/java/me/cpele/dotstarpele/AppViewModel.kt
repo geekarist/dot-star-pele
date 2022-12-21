@@ -252,6 +252,7 @@ private fun setUpProposalUimFlow(
             identifyPrevScreen(screenUim)
         )
     }
+    // [FIXME] Filter prevents emission of proposal when no unrated name exists
     .filter { (proposedNameDtos, _, _, _) -> proposedNameDtos != null }
     .map { (proposedNameDtos, countAll, nextScreen, prevScreen) ->
         val nameDto = proposedNameDtos?.getOrNull(0)
