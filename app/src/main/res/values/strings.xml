@@ -13,4 +13,5 @@
     <string name="listing_like">Like</string>
     <string name="listing_dislike">Dislike</string>
     <string name="listing_unknown">Unknown</string>
+    <string name="proposal_well_done">Well done! You have rated all the first names.</string>
 </resources>

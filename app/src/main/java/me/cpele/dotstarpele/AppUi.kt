@@ -68,15 +68,27 @@ sealed interface ProposalUiModel {
 
     data class Loading(override val prevScreen: AppUiModel.Screen) : ProposalUiModel
 
-    data class Ready(
-        val currentName: String,
-        val currentNameTag: Pair<String, String>,
-        val ratedCount: Int,
-        val totalCount: Int,
-        val gender: GenderUiModel,
-        val nextScreen: AppUiModel.Screen? = null,
+    sealed interface Ready : ProposalUiModel {
+        val ratedCount: Int
+        val totalCount: Int
         override val prevScreen: AppUiModel.Screen
-    ) : ProposalUiModel
+
+        data class Some(
+            val currentName: String,
+            val currentNameTag: Pair<String, String>,
+            val gender: GenderUiModel,
+            val nextScreen: AppUiModel.Screen? = null,
+            override val ratedCount: Int,
+            override val totalCount: Int,
+            override val prevScreen: AppUiModel.Screen,
+        ) : Ready
+
+        data class None(
+            override val ratedCount: Int,
+            override val totalCount: Int,
+            override val prevScreen: AppUiModel.Screen,
+        ) : Ready
+    }
 }
 
 data class ListingUiModel(val names: List<ListingItemUiModel> = listOf(), val nameFilter: String)
@@ -154,7 +166,20 @@ fun Proposal(
         )
         when (uim) {
             is ProposalUiModel.Loading -> Text(text = "Loading names...")
-            is ProposalUiModel.Ready -> Column(
+            is ProposalUiModel.Ready.None -> Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    stringResource(
+                        R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
+                    )
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(stringResource(id = R.string.proposal_well_done))
+            }
+            is ProposalUiModel.Ready.Some -> Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
