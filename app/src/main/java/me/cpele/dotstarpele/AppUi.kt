@@ -186,7 +186,7 @@ private fun ProposalReadySome(
             colorFilter = ColorFilter.tint(uim.gender.tint),
             imageVector = ImageVector.vectorResource(id = uim.gender.icon),
             modifier = Modifier
-                .size(96.dp)
+                .size(48.dp)
                 .padding(bottom = 8.dp),
             contentDescription = stringResource(id = uim.gender.description)
         )
@@ -272,10 +272,11 @@ private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
             colorFilter = ColorFilter.tint(Color.Green),
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_well_done),
             modifier = Modifier
-                .size(48.dp)
+                .size(96.dp)
                 .padding(bottom = 8.dp),
             contentDescription = stringResource(id = R.string.proposal_well_done_content_desc)
         )
+        Spacer(modifier = Modifier.height(32.dp))
         Text(
             stringResource(
                 R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
