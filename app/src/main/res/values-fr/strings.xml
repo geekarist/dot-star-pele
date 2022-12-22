@@ -7,6 +7,7 @@
     <string name="home_mine_button">Mes prénoms</string>
     <string name="home_title">.* Pelé</string>
     <string name="rate_count_ratings">%1$d prénoms notés sur %2$d</string>
+    <string name="proposal_well_done">Bravo ! Vous avez noté tous les prénoms.</string>
     <string name="my_male">Garçon</string>
     <string name="my_female">Fille</string>
     <string name="listing_filter">Filtrer</string>
@@ -14,4 +15,5 @@
     <string name="listing_like">J\'aime</string>
     <string name="listing_dislike">Je n\'aime pas</string>
     <string name="listing_unknown">Je ne sais pas</string>
+    <string name="proposal_well_done_content_desc">Well done!</string>
 </resources>

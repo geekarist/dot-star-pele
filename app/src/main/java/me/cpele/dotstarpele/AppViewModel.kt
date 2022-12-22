@@ -246,20 +246,19 @@ private fun setUpProposalUimFlow(
     .map { it.shuffled() }
     .combine(screenFlow, allNameDtosFlow) { shuffledUnratedNameDtos, screenUim, allNameDtos ->
         Quartet(
-            proposeNames(shuffledUnratedNameDtos, screenUim).takeIf { it.isNotEmpty() },
+            proposeNames(shuffledUnratedNameDtos, screenUim),
             allNameDtos.size,
             identifyNextScreen(screenUim),
             identifyPrevScreen(screenUim)
         )
     }
-    .filter { (proposedNameDtos, _, _, _) -> proposedNameDtos != null }
     .map { (proposedNameDtos, countAll, nextScreen, prevScreen) ->
-        val nameDto = proposedNameDtos?.getOrNull(0)
-        val countUnrated = proposedNameDtos?.size
+        val nameDto = proposedNameDtos.getOrNull(0)
+        val countUnrated = proposedNameDtos.size
         Quintet(nameDto, countUnrated, countAll, nextScreen, prevScreen)
     }
-    .map { (nameDto, proposedCount, countAll, nextScreen, prevScreen) ->
-        modelUi(nameDto, proposedCount, countAll, nextScreen, prevScreen)
+    .map { (nameDto, countUnrated, countAll, nextScreen, prevScreen) ->
+        modelUi(nameDto, countUnrated, countAll, nextScreen, prevScreen)
     }
     .filterNotNull()
     .onEach { logd { "Got proposal UI model: $it" } }
@@ -273,22 +272,32 @@ inline fun <reified T1, reified T2, reified T3, R> Flow<T1>.combine(
 
 private fun modelUi(
     nameDto: NameDto?,
-    proposedCount: Int?,
+    countUnrated: Int?,
     countAll: Int,
     nextScreen: AppUiModel.Screen?,
     prevScreen: AppUiModel.Screen
-) = if (nameDto != null && proposedCount != null) {
-    ProposalUiModel.Ready(
+) = if (nameDto != null && countUnrated != null) {
+    ProposalUiModel.Ready.Some(
         nameDto.text,
-        ratedCount = countAll - proposedCount,
+        ratedCount = countAll - countUnrated,
         totalCount = countAll,
         currentNameTag = nameDto.text to nameDto.gender.name,
         gender = nameDto.gender.toUiModel(),
         nextScreen = nextScreen,
         prevScreen = prevScreen
     )
+} else if (countUnrated != null) {
+    ProposalUiModel.Ready.None(
+        ratedCount = countAll - countUnrated,
+        totalCount = countAll,
+        prevScreen = prevScreen
+    )
 } else {
-    null
+    ProposalUiModel.Ready.None(
+        ratedCount = -1,
+        totalCount = countAll,
+        prevScreen = prevScreen
+    )
 }
 
 data class Quintet<out A, out B, out C, out D, out E>(
