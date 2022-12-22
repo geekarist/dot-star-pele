@@ -272,8 +272,7 @@ private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
             colorFilter = ColorFilter.tint(Color.Green),
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_well_done),
             modifier = Modifier
-                .size(96.dp)
-                .padding(bottom = 8.dp),
+                .size(96.dp),
             contentDescription = stringResource(id = R.string.proposal_well_done_content_desc)
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -283,7 +282,11 @@ private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
             )
         )
         Spacer(modifier = Modifier.height(32.dp))
-        Text(stringResource(id = R.string.proposal_well_done))
+        Text(
+            style = MaterialTheme.typography.headlineSmall,
+            text = stringResource(id = R.string.proposal_well_done)
+        )
+        Spacer(modifier = Modifier.height(192.dp))
     }
 }
 
