@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.io.Serializable
 
@@ -284,6 +285,7 @@ private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
             style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
             text = stringResource(id = R.string.proposal_well_done)
         )
         Spacer(modifier = Modifier.height(192.dp))
