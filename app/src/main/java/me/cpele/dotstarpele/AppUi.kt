@@ -166,102 +166,123 @@ fun Proposal(
         )
         when (uim) {
             is ProposalUiModel.Loading -> Text(text = "Loading names...")
-            is ProposalUiModel.Ready.None -> Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    stringResource(
-                        R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
-                    )
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(stringResource(id = R.string.proposal_well_done))
-            }
-            is ProposalUiModel.Ready.Some -> Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Image(
-                    colorFilter = ColorFilter.tint(uim.gender.tint),
-                    imageVector = ImageVector.vectorResource(id = uim.gender.icon),
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(bottom = 8.dp),
-                    contentDescription = stringResource(id = uim.gender.description)
-                )
-                Text(
-                    text = uim.currentName,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    stringResource(
-                        R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
-                    )
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
-                    val (key1, key2) = uim.currentNameTag
-                    dispatch(
-                        AppViewModel.Event.Review.Love(
-                            nameText = key1, nameGenderText = key2
-                        )
-                    )
-                    uim.nextScreen?.let { nextScreen ->
-                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
-                    }
-                }) {
-                    Text(text = RatingUiModel.Love.emoji)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
-                    val (key1, key2) = uim.currentNameTag
-                    dispatch(
-                        AppViewModel.Event.Review.Like(
-                            nameText = key1, nameGenderText = key2
-                        )
-                    )
-                    uim.nextScreen?.let { nextScreen ->
-                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
-                    }
-                }) {
-                    Text(text = RatingUiModel.Like.emoji)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
-                    val (key1, key2) = uim.currentNameTag
-                    dispatch(
-                        AppViewModel.Event.Review.Dislike(
-                            nameText = key1, nameGenderText = key2
-                        )
-                    )
-                    uim.nextScreen?.let { nextScreen ->
-                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
-                    }
-                }) {
-                    Text(text = RatingUiModel.Dislike.emoji)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
-                    val (key1, key2) = uim.currentNameTag
-                    dispatch(
-                        AppViewModel.Event.Review.Unknown(
-                            nameText = key1, nameGenderText = key2
-                        )
-                    )
-                    uim.nextScreen?.let { nextScreen ->
-                        dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
-                    }
-                }) {
-                    Text(text = RatingUiModel.Unknown.emoji)
-                }
-                Spacer(modifier = Modifier.height(96.dp))
-            }
+            is ProposalUiModel.Ready.None -> ProposalReadyNone(uim)
+            is ProposalUiModel.Ready.Some -> ProposalReadySome(uim, dispatch)
         }
+    }
+}
+
+@Composable
+private fun ProposalReadySome(
+    uim: ProposalUiModel.Ready.Some,
+    dispatch: (AppViewModel.Event) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            colorFilter = ColorFilter.tint(uim.gender.tint),
+            imageVector = ImageVector.vectorResource(id = uim.gender.icon),
+            modifier = Modifier
+                .size(96.dp)
+                .padding(bottom = 8.dp),
+            contentDescription = stringResource(id = uim.gender.description)
+        )
+        Text(
+            text = uim.currentName,
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            stringResource(
+                R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
+            )
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+            val (key1, key2) = uim.currentNameTag
+            dispatch(
+                AppViewModel.Event.Review.Love(
+                    nameText = key1, nameGenderText = key2
+                )
+            )
+            uim.nextScreen?.let { nextScreen ->
+                dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+            }
+        }) {
+            Text(text = RatingUiModel.Love.emoji)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+            val (key1, key2) = uim.currentNameTag
+            dispatch(
+                AppViewModel.Event.Review.Like(
+                    nameText = key1, nameGenderText = key2
+                )
+            )
+            uim.nextScreen?.let { nextScreen ->
+                dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+            }
+        }) {
+            Text(text = RatingUiModel.Like.emoji)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+            val (key1, key2) = uim.currentNameTag
+            dispatch(
+                AppViewModel.Event.Review.Dislike(
+                    nameText = key1, nameGenderText = key2
+                )
+            )
+            uim.nextScreen?.let { nextScreen ->
+                dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+            }
+        }) {
+            Text(text = RatingUiModel.Dislike.emoji)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+            val (key1, key2) = uim.currentNameTag
+            dispatch(
+                AppViewModel.Event.Review.Unknown(
+                    nameText = key1, nameGenderText = key2
+                )
+            )
+            uim.nextScreen?.let { nextScreen ->
+                dispatch(AppViewModel.Event.Navigation(screen = nextScreen))
+            }
+        }) {
+            Text(text = RatingUiModel.Unknown.emoji)
+        }
+        Spacer(modifier = Modifier.height(96.dp))
+    }
+}
+
+@Composable
+private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            colorFilter = ColorFilter.tint(Color.Green),
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_well_done),
+            modifier = Modifier
+                .size(48.dp)
+                .padding(bottom = 8.dp),
+            contentDescription = stringResource(id = R.string.proposal_well_done_content_desc)
+        )
+        Text(
+            stringResource(
+                R.string.rate_count_ratings, uim.ratedCount, uim.totalCount
+            )
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(stringResource(id = R.string.proposal_well_done))
     }
 }
 
