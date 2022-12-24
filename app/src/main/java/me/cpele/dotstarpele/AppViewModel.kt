@@ -6,6 +6,7 @@ package me.cpele.dotstarpele
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -86,7 +87,12 @@ class AppViewModel(private val application: Application) : ViewModel() {
             is Event.Navigation -> State.screenUimFlow.value = event.screen
             is Event.Review -> handleReviewEvent(event)
             is Event.Listing.Filter -> handleFilterName(event.text)
+            is Event.Listing.Share -> handleListingShare()
         }
+    }
+
+    private fun handleListingShare() {
+        Toast.makeText(application, "Yo", Toast.LENGTH_SHORT).show()
     }
 
     private fun handleReviewEvent(event: Event.Review) {
@@ -163,6 +169,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
 
         sealed interface Listing : Event {
+            object Share : Event
             data class Filter(val text: String) : Listing
         }
     }

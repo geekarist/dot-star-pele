@@ -349,7 +349,9 @@ private fun ListingControls(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.weight(fill = true, weight = 1f)
         )
-        TextButton(onClick = {}) {
+        TextButton(onClick = {
+            dispatch(AppViewModel.Event.Listing.Share)
+        }) {
             Image(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_share),
                 contentDescription = stringResource(R.string.listing_share)
