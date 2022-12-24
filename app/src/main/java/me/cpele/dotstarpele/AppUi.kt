@@ -343,10 +343,19 @@ private fun ListingControls(
     BackHandler(onBack = {
         dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
     })
-    Text(
-        text = stringResource(id = R.string.my_head),
-        style = MaterialTheme.typography.headlineMedium
-    )
+    Row {
+        Text(
+            text = stringResource(id = R.string.my_head),
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.weight(fill = true, weight = 1f)
+        )
+        TextButton(onClick = {}) {
+            Image(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_share),
+                contentDescription = stringResource(R.string.listing_share)
+            )
+        }
+    }
     TextField(placeholder = { stringResource(R.string.listing_filter) },
         value = uim.nameFilter,
         modifier = Modifier.fillMaxWidth(),

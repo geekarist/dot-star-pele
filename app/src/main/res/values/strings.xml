@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Dot Star Pelé</string>
     <string name="rate_head">Rate</string>
-    <string name="my_head">My firstnames</string>
-    <string name="home_rate_button">Rate firstnames</string>
-    <string name="home_mine_button">My firstnames</string>
+    <string name="my_head">My first names</string>
+    <string name="home_rate_button">Rate first names</string>
+    <string name="home_mine_button">My first names</string>
     <string name="home_title">.* Pelé</string>
     <string name="rate_count_ratings">Rated %1$d of %2$d firstnames</string>
     <string name="my_male">Boy</string>
@@ -13,6 +13,7 @@
     <string name="listing_like">Like</string>
     <string name="listing_dislike">Dislike</string>
     <string name="listing_unknown">Unknown</string>
+    <string name="listing_share">Share</string>
     <string name="proposal_well_done">Well done! You have rated all the first names.</string>
     <string name="proposal_well_done_content_desc">Well done!</string>
 </resources>
