@@ -100,6 +100,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 val sendIntent = Intent().apply {
                     action = Intent.ACTION_SEND
                     putExtra(Intent.EXTRA_TEXT, ratings.toString())
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 val shareIntent = Intent.createChooser(sendIntent, null)
                 application.startActivity(shareIntent)
