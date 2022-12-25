@@ -29,6 +29,11 @@ interface RatingDao {
 
     @Delete
     fun remove(rating: RatingDto)
+
+    @Query("SELECT * FROM rating WHERE note IN (:notes)")
+    fun findByNoteIn(notes: List<NoteDto>): List<RatingDto>
+
+    fun findByNoteIn(vararg notes: NoteDto): List<RatingDto> = findByNoteIn(notes.toList())
 }
 
 @Dao

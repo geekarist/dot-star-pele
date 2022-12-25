@@ -6,7 +6,6 @@ package me.cpele.dotstarpele
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -92,7 +91,10 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleListingShare() {
-        Toast.makeText(application, "Yo", Toast.LENGTH_SHORT).show()
+        viewModelScope.launch(Dispatchers.IO) {
+            val ratings = db.ratingDao().findByNoteIn(NoteDto.Love, NoteDto.Like, NoteDto.Dislike)
+            logd { "Got ratings: $ratings" }
+        }
     }
 
     private fun handleReviewEvent(event: Event.Review) {
