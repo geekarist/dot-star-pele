@@ -5,6 +5,7 @@ package me.cpele.dotstarpele
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.annotation.RawRes
 import androidx.compose.runtime.Composable
@@ -94,6 +95,12 @@ class AppViewModel(private val application: Application) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val ratings = db.ratingDao().findByNoteIn(NoteDto.Love, NoteDto.Like, NoteDto.Dislike)
             logd { "Got ratings: $ratings" }
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, ratings.toString())
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            application.startActivity(shareIntent)
         }
     }
 
