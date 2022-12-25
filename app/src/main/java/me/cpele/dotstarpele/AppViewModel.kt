@@ -92,15 +92,18 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun handleListingShare() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val ratings = db.ratingDao().findByNoteIn(NoteDto.Love, NoteDto.Like, NoteDto.Dislike)
-            logd { "Got ratings: $ratings" }
-            val sendIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, ratings.toString())
+        viewModelScope.launch {
+            val ratings = withContext(Dispatchers.IO) {
+                db.ratingDao().findByNoteIn(NoteDto.Love, NoteDto.Like, NoteDto.Dislike)
             }
-            val shareIntent = Intent.createChooser(sendIntent, null)
-            application.startActivity(shareIntent)
+            withContext(Dispatchers.Main) {
+                val sendIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, ratings.toString())
+                }
+                val shareIntent = Intent.createChooser(sendIntent, null)
+                application.startActivity(shareIntent)
+            }
         }
     }
 
