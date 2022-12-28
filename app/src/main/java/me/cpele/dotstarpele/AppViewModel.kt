@@ -3,7 +3,6 @@
 
 package me.cpele.dotstarpele
 
-import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -88,11 +87,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
             is Event.Navigation -> State.screenUimFlow.value = event.screen
             is Event.Review -> handleReviewEvent(event)
             is Event.Listing.Filter -> handleFilterName(event.text)
-            is Event.Listing.Share -> handleListingShare(event.activity)
+            is Event.Listing.Share -> handleListingShare()
         }
     }
 
-    private fun handleListingShare(activity: Activity?) {
+    private fun handleListingShare() {
         viewModelScope.launch {
             val ratings = withContext(Dispatchers.IO) {
                 db.ratingDao().findByNoteIn(NoteDto.Love, NoteDto.Like, NoteDto.Dislike)
@@ -105,7 +104,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 val shareIntent = Intent.createChooser(sendIntent, null).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                activity?.startActivity(shareIntent)
+                application.startActivity(shareIntent)
             }
         }
     }
@@ -184,7 +183,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         }
 
         sealed interface Listing : Event {
-            data class Share(val activity: Activity?) : Listing
+            object Share : Event
             data class Filter(val text: String) : Listing
         }
     }
