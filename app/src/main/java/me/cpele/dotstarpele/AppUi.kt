@@ -2,7 +2,6 @@
 
 package me.cpele.dotstarpele
 
-import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
@@ -19,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -351,9 +349,8 @@ private fun ListingControls(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.weight(fill = true, weight = 1f)
         )
-        val activity = LocalView.current.context as? Activity
         TextButton(onClick = {
-            dispatch(AppViewModel.Event.Listing.Share(activity))
+            dispatch(AppViewModel.Event.Listing.Share)
         }) {
             Image(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_share),
