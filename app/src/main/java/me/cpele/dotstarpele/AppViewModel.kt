@@ -99,7 +99,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
             withContext(Dispatchers.Main) {
                 val sendIntent = Intent().apply {
                     action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, ratings.toString())
+                    type = "text/html"
+                    putExtra(Intent.EXTRA_TEXT, toPlainStr(ratings))
+                    putExtra(Intent.EXTRA_HTML_TEXT, toHtmlStr(ratings))
                 }
                 val shareIntent = Intent.createChooser(sendIntent, null).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -108,6 +110,19 @@ class AppViewModel(private val application: Application) : ViewModel() {
             }
         }
     }
+
+    private fun toPlainStr(ratings: List<RatingDto>): String =
+        """Listing ${ratings.size} names:
+            - Yo 1
+            - Yo 2
+        """.trimIndent()
+
+    private fun toHtmlStr(ratings: List<RatingDto>): String =
+        """Listing ${ratings.size} names:
+            |<ul>
+            |  <li>Yo 1</li>
+            |  <li>Yo 2</li>
+            |</ul>""".trimMargin()
 
     private fun handleReviewEvent(event: Event.Review) {
         logd { "Handling review event: $event" }
