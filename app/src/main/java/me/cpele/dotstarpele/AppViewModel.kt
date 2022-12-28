@@ -113,9 +113,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private fun toPlainStr(ratings: List<RatingDto>): String =
         """Listing ${ratings.size} names:
-            - Yo 1
-            - Yo 2
-        """.trimIndent()
+           |- Yo 1
+           |- Yo 2
+        """.trimMargin()
 
     private fun toHtmlStr(ratings: List<RatingDto>): String =
         """Listing ${ratings.size} names:
