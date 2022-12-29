@@ -112,10 +112,31 @@ class AppViewModel(private val application: Application) : ViewModel() {
     }
 
     private fun toPlainStr(ratings: List<RatingDto>): String =
-        """Listing ${ratings.size} names:
-           |- Yo 1
-           |- Yo 2
-        """.trimMargin()
+        ratings.filter { it.note.rank <= NoteDto.Like.rank }
+            .groupBy { it.note }
+            .let { namesByNote ->
+                val lovedNames = namesByNote[NoteDto.Love] ?: emptyList()
+                val lovedNamesByGender = lovedNames.groupBy { it.nameGender }
+                val lovedBoyNames = lovedNamesByGender[GenderDto.Boy]
+                val lovedGirlNames = lovedNamesByGender[GenderDto.Girl]
+                val likedNames = namesByNote[NoteDto.Like] ?: emptyList()
+                val likedNamesByGender = likedNames.groupBy { it.nameGender }
+                val likedBoyNames = likedNamesByGender[GenderDto.Boy]
+                val likedGirlNames = likedNamesByGender[GenderDto.Girl]
+                val formattedLovedByNames = lovedBoyNames?.joinToString(", ") ?: "none"
+                val formattedLovedGirlNames = lovedGirlNames?.joinToString(", ") ?: "none"
+                val formattedLikedBoyNames = likedBoyNames?.joinToString(", ") ?: "none"
+                val formattedLikedGirlNames = likedGirlNames?.joinToString(", ") ?: "none"
+                """Hello!
+                    |Here are my favorite first names.
+                    |Names I loved:
+                    |- Boys: $formattedLovedByNames
+                    |- Girls: $formattedLovedGirlNames
+                    |Names I liked:
+                    |- Boys: $formattedLikedBoyNames
+                    |- Girls: $formattedLikedGirlNames
+                """.trimMargin()
+            }
 
     private fun toHtmlStr(ratings: List<RatingDto>): String =
         """Listing ${ratings.size} names:
