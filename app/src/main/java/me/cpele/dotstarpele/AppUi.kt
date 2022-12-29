@@ -354,7 +354,8 @@ private fun ListingControls(
         }) {
             Image(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_share),
-                contentDescription = stringResource(R.string.listing_share)
+                contentDescription = stringResource(R.string.listing_share),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
         }
     }
