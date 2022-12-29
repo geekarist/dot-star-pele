@@ -30,7 +30,6 @@ class AppViewModel(private val application: Application) : ViewModel() {
         val listingFilterStrFlow = MutableStateFlow<String?>(null)
     }
 
-    // TODO: define `Distributary`, `Tributary`, `Delta`? interfaces, `compound` function?
     private val listingUimFlow = setUpListingUimFlow(
         nameRatingDtosFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
         listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
