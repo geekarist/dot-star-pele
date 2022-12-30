@@ -140,7 +140,9 @@ class AppViewModel(private val application: Application) : ViewModel() {
                     formattedLovedGirlNames,
                     formattedLikedBoyNames,
                     formattedLikedGirlNames
-                )
+                ).also {
+                    logd { "Share message: $it" }
+                }
             }
 
     private fun handleReviewEvent(event: Event.Review) {
