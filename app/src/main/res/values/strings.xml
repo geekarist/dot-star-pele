@@ -16,4 +16,20 @@
     <string name="listing_share">Share</string>
     <string name="proposal_well_done">Well done! You have rated all the first names.</string>
     <string name="proposal_well_done_content_desc">Well done!</string>
+    <string name="listing_share_message">
+[<![CDATA[
+Hello!
+
+Here are my favorite first names.
+
+Names I loved:
+- Boys: %1$s
+- Girls: %2$s
+
+Names I liked:
+- Boys: %3$s
+- Girls: %4$s
+]]>
+    </string>
+    <string name="app_common_none">none</string>
 </resources>

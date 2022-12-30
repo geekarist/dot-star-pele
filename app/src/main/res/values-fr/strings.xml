@@ -17,4 +17,20 @@
     <string name="listing_unknown">Je ne sais pas</string>
     <string name="proposal_well_done_content_desc">Bravo !</string>
     <string name="listing_share">Partager</string>
+    <string name="listing_share_message">
+[<![CDATA[
+Bonjour !
+
+Voici mes prénoms préférés.
+
+Ceux que j\'adore:
+- Garçons: %1$s
+- Filles: %2$s
+
+Ceux que j\'aime:
+- Garçons: %3$s
+- Filles: %4$s
+]]>
+    </string>
+    <string name="app_common_none">aucun</string>
 </resources>

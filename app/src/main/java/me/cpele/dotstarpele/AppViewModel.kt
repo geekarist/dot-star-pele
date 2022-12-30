@@ -113,6 +113,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
         ratings.filter { it.note.rank <= NoteDto.Like.rank }
             .groupBy { it.note }
             .let { namesByNote ->
+                // TODO: extract functions
                 val lovedNames = namesByNote[NoteDto.Love] ?: emptyList()
                 val lovedNamesByGender = lovedNames.groupBy { it.nameGender }
                 val lovedBoyNames = lovedNamesByGender[GenderDto.Boy]
@@ -123,28 +124,23 @@ class AppViewModel(private val application: Application) : ViewModel() {
                 val likedGirlNames = likedNamesByGender[GenderDto.Girl]
                 val formattedLovedByNames = lovedBoyNames?.joinToString(", ") {
                     it.nameText
-                } ?: "none"
+                } ?: application.getString(R.string.app_common_none)
                 val formattedLovedGirlNames = lovedGirlNames?.joinToString(", ") {
                     it.nameText
-                } ?: "none"
+                } ?: application.getString(R.string.app_common_none)
                 val formattedLikedBoyNames = likedBoyNames?.joinToString(", ") {
                     it.nameText
-                } ?: "none"
+                } ?: application.getString(R.string.app_common_none)
                 val formattedLikedGirlNames = likedGirlNames?.joinToString(", ") {
                     it.nameText
-                } ?: "none"
-                """Hello!
-                    |
-                    |Here are my favorite first names.
-                    |
-                    |Names I loved:
-                    |- Boys: $formattedLovedByNames
-                    |- Girls: $formattedLovedGirlNames
-                    |
-                    |Names I liked:
-                    |- Boys: $formattedLikedBoyNames
-                    |- Girls: $formattedLikedGirlNames
-                """.trimMargin()
+                } ?: application.getString(R.string.app_common_none)
+                application.getString(
+                    R.string.listing_share_message,
+                    formattedLovedByNames,
+                    formattedLovedGirlNames,
+                    formattedLikedBoyNames,
+                    formattedLikedGirlNames
+                )
             }
 
     private fun handleReviewEvent(event: Event.Review) {
