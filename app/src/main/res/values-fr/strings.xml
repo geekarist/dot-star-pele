@@ -22,13 +22,13 @@ Bonjour !\n
 \n
 Voici mes prénoms préférés.\n
 \n
-Ceux que j\'adore:\n
-- Garçons: %1$s\n
-- Filles: %2$s\n
+Ceux que j\'adore :\n
+- Garçons : %1$s\n
+- Filles : %2$s\n
 \n
-Ceux que j\'aime:\n
-- Garçons: %3$s\n
-- Filles: %4$s\n
+Ceux que j\'aime :\n
+- Garçons : %3$s\n
+- Filles : %4$s\n
     </string>
     <string name="app_common_none">aucun</string>
 </resources>
