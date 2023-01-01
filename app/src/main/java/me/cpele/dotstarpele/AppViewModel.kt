@@ -269,15 +269,23 @@ private fun setUpListingUimFlow(
     nameRatingDtosFlow: Flow<List<NameRatingDto>>,
     listingDebouncedFilterStrFlow: Flow<String?>,
     listingFilterStrFlow: MutableStateFlow<String?>
-) = nameRatingDtosFlow
-    .combine(listingDebouncedFilterStrFlow) { nameRatingDtos, filterStr ->
-        filterNames(nameRatingDtos, filterStr)
-    }.mapNotNull { nameRatingDtos ->
-        sort(nameRatingDtos)
-    }.map { it.toUiModels() }
-    .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
-        ListingUiModel(names = listingItemUims, nameFilter = filterStr ?: "")
-    }.flowOn(Dispatchers.Default)
+): Flow<ListingUiModel> {
+    val initListingUimFlow = flowOf(ListingUiModel(nameFilter = ""))
+    val loadingListingUimFlow =
+        initListingUimFlow.combine(listingFilterStrFlow) { initListingUim, listingFilterStr ->
+            initListingUim.copy(nameFilter = listingFilterStr ?: "")
+        }
+    val completeListingUimFlow = nameRatingDtosFlow
+        .combine(listingDebouncedFilterStrFlow) { nameRatingDtos, filterStr ->
+            filterNames(nameRatingDtos, filterStr)
+        }.mapNotNull { nameRatingDtos ->
+            sort(nameRatingDtos)
+        }.map { it.toUiModels() }
+        .combine(loadingListingUimFlow) { listingItemUims, loadingListingUim ->
+            loadingListingUim.copy(names = listingItemUims)
+        }
+    return completeListingUimFlow.flowOn(Dispatchers.Default)
+}
 
 private fun sort(nameRatingDtos: List<NameRatingDto>) =
     nameRatingDtos
