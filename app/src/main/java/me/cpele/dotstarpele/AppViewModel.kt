@@ -27,12 +27,11 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private object State {
         val screenUimFlow = MutableStateFlow<AppUiModel.Screen>(AppUiModel.Screen.Home)
-        val listingFilterStrFlow = MutableStateFlow<String?>(null)
+        val listingFilterStrFlow = MutableStateFlow<String>("")
     }
 
     private val listingUimFlow = setUpListingUimFlow(
         nameRatingDtosFlow = db.nameRatingDao().findAll().flowOn(Dispatchers.IO),
-        listingDebouncedFilterStrFlow = State.listingFilterStrFlow.debounce(100),
         listingFilterStrFlow = State.listingFilterStrFlow
     )
 
@@ -267,16 +266,15 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
 
 private fun setUpListingUimFlow(
     nameRatingDtosFlow: Flow<List<NameRatingDto>>,
-    listingDebouncedFilterStrFlow: Flow<String?>,
-    listingFilterStrFlow: MutableStateFlow<String?>
+    listingFilterStrFlow: MutableStateFlow<String>
 ): Flow<ListingUiModel> {
     val initListingUimFlow = flowOf(ListingUiModel(nameFilter = ""))
     val loadingListingUimFlow =
         initListingUimFlow.combine(listingFilterStrFlow) { initListingUim, listingFilterStr ->
-            initListingUim.copy(nameFilter = listingFilterStr ?: "")
+            initListingUim.copy(nameFilter = listingFilterStr)
         }
     val completeListingUimFlow = nameRatingDtosFlow
-        .combine(listingDebouncedFilterStrFlow) { nameRatingDtos, filterStr ->
+        .combine(listingFilterStrFlow) { nameRatingDtos, filterStr ->
             filterNames(nameRatingDtos, filterStr)
         }.mapNotNull { nameRatingDtos ->
             sort(nameRatingDtos)
