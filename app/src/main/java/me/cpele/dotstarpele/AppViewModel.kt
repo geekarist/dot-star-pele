@@ -284,7 +284,8 @@ private fun setUpListingUimFlow(
         .combine(loadingListingUimFlow) { listingItemUims, loadingListingUim ->
             loadingListingUim.copy(names = listingItemUims)
         }
-    return completeListingUimFlow.flowOn(Dispatchers.Default)
+    val mergedListingUimFlow = merge(loadingListingUimFlow, completeListingUimFlow)
+    return mergedListingUimFlow.flowOn(Dispatchers.Default)
 }
 
 private fun sort(nameRatingDtos: List<NameRatingDto>) =
