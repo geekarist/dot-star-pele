@@ -267,24 +267,16 @@ private fun unaccented(str: String?) = str?.let { nonNullStr ->
 private fun setUpListingUimFlow(
     nameRatingDtosFlow: Flow<List<NameRatingDto>>,
     listingFilterStrFlow: MutableStateFlow<String>
-): Flow<ListingUiModel> {
-    val initListingUimFlow = flowOf(ListingUiModel(nameFilter = ""))
-    val loadingListingUimFlow =
-        initListingUimFlow.combine(listingFilterStrFlow) { initListingUim, listingFilterStr ->
-            initListingUim.copy(nameFilter = listingFilterStr)
-        }
-    val completeListingUimFlow = nameRatingDtosFlow
+): Flow<ListingUiModel> =
+    nameRatingDtosFlow
         .combine(listingFilterStrFlow) { nameRatingDtos, filterStr ->
             filterNames(nameRatingDtos, filterStr)
         }.mapNotNull { nameRatingDtos ->
             sort(nameRatingDtos)
         }.map { it.toUiModels() }
-        .combine(loadingListingUimFlow) { listingItemUims, loadingListingUim ->
-            loadingListingUim.copy(names = listingItemUims)
-        }
-    val mergedListingUimFlow = merge(loadingListingUimFlow, completeListingUimFlow)
-    return mergedListingUimFlow.flowOn(Dispatchers.Default)
-}
+        .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
+            ListingUiModel(names = listingItemUims, nameFilter = filterStr)
+        }.flowOn(Dispatchers.Default)
 
 private fun sort(nameRatingDtos: List<NameRatingDto>) =
     nameRatingDtos
