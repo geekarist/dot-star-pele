@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,7 +93,7 @@ sealed interface ProposalUiModel {
     }
 }
 
-data class ListingUiModel(val names: List<ListingItemUiModel> = listOf(), val nameFilter: String)
+data class ListingUiModel(val names: List<ListingItemUiModel> = listOf())
 
 inline fun logd(provideMsg: () -> String) {
     val myObject = object : Any() {}
@@ -300,7 +301,7 @@ fun Listing(
     dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
-        ListingControls(uim, dispatch)
+        ListingControls(dispatch)
         ListingBody(uim, state, dispatch)
     }
 }
@@ -337,9 +338,7 @@ private fun ListingBody(
 }
 
 @Composable
-private fun ListingControls(
-    uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit
-) {
+private fun ListingControls(dispatch: (AppViewModel.Event) -> Unit) {
     BackHandler(onBack = {
         dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
     })
@@ -359,8 +358,9 @@ private fun ListingControls(
             )
         }
     }
+    val filterStr by rememberSaveable { mutableStateOf("") }
     TextField(placeholder = { stringResource(R.string.listing_filter) },
-        value = uim.nameFilter,
+        value = filterStr,
         modifier = Modifier.fillMaxWidth(),
         onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
 }
