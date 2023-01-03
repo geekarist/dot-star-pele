@@ -1,3 +1,4 @@
+@file:OptIn(FlowPreview::class)
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
 
 package me.cpele.dotstarpele
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,7 +27,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
 
     private object State {
         val screenUimFlow = MutableStateFlow<AppUiModel.Screen>(AppUiModel.Screen.Home)
-        val listingFilterStrFlow = MutableStateFlow("")
+        val listingFilterStrFlow = MutableStateFlow<String>("")
     }
 
     private val listingUimFlow = setUpListingUimFlow(
@@ -181,7 +183,7 @@ class AppViewModel(private val application: Application) : ViewModel() {
     @Composable
     fun collectUiModel() = uiModelFlow.collectAsState(
         AppUiModel(
-            listing = ListingUiModel(emptyList()),
+            listing = ListingUiModel(emptyList(), ""),
             proposal = ProposalUiModel.Loading(AppUiModel.Screen.Home)
         )
     )
@@ -272,8 +274,8 @@ private fun setUpListingUimFlow(
         }.mapNotNull { nameRatingDtos ->
             sort(nameRatingDtos)
         }.map { it.toUiModels() }
-        .map { listingItemUims ->
-            ListingUiModel(names = listingItemUims)
+        .combine(listingFilterStrFlow) { listingItemUims, filterStr ->
+            ListingUiModel(names = listingItemUims, nameFilter = filterStr)
         }.flowOn(Dispatchers.Default)
 
 private fun sort(nameRatingDtos: List<NameRatingDto>) =
