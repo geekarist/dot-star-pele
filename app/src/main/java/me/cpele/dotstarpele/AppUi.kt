@@ -32,16 +32,13 @@ enum class GenderUiModel(
     val tint: Color, @DrawableRes val icon: Int, @StringRes val description: Int
 ) {
     Boy(Color.Blue, R.drawable.ic_male, R.string.my_male), Girl(
-        Color.Magenta,
-        R.drawable.ic_female,
-        R.string.my_female
+        Color.Magenta, R.drawable.ic_female, R.string.my_female
     ),
 }
 
 enum class RatingUiModel(val emoji: String, @StringRes val text: Int) {
     Love("❤️", R.string.listing_love), Like(
-        "\uD83D\uDC4D",
-        R.string.listing_like
+        "\uD83D\uDC4D", R.string.listing_like
     ),
     Dislike("\uD83D\uDC4E", R.string.listing_dislike), Unknown("❓", R.string.listing_unknown),
 }
@@ -55,9 +52,7 @@ data class AppUiModel(
         object Home : Screen()
 
         data class Proposal(
-            val nameTag: Any? = null,
-            val previous: Screen = Home,
-            val next: Screen? = null
+            val nameTag: Any? = null, val previous: Screen = Home, val next: Screen? = null
         ) : Screen()
 
         object Listing : Screen()
@@ -92,7 +87,7 @@ sealed interface ProposalUiModel {
     }
 }
 
-data class ListingUiModel(val names: List<ListingItemUiModel> = listOf(), val nameFilter: String)
+data class ListingUiModel(val names: List<ListingItemUiModel> = listOf())
 
 inline fun logd(provideMsg: () -> String) {
     val myObject = object : Any() {}
@@ -108,9 +103,7 @@ fun App(appUim: AppUiModel, dispatch: (AppViewModel.Event) -> Unit) {
         AppUiModel.Screen.Home -> Home(dispatch = dispatch)
         is AppUiModel.Screen.Proposal -> Proposal(uim = appUim.proposal, dispatch = dispatch)
         AppUiModel.Screen.Listing -> Listing(
-            uim = appUim.listing,
-            state = appState.listingState,
-            dispatch = dispatch
+            uim = appUim.listing, state = appState.listingState, dispatch = dispatch
         )
     }
 }
@@ -175,8 +168,7 @@ fun Proposal(
 
 @Composable
 private fun ProposalReadySome(
-    uim: ProposalUiModel.Ready.Some,
-    dispatch: (AppViewModel.Event) -> Unit
+    uim: ProposalUiModel.Ready.Some, dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -272,8 +264,7 @@ private fun ProposalReadyNone(uim: ProposalUiModel.Ready.None) {
         Image(
             colorFilter = ColorFilter.tint(Color.Green),
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_well_done),
-            modifier = Modifier
-                .size(96.dp),
+            modifier = Modifier.size(96.dp),
             contentDescription = stringResource(id = R.string.proposal_well_done_content_desc)
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -300,16 +291,14 @@ fun Listing(
     dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
-        ListingControls(uim, dispatch)
+        ListingControls(dispatch)
         ListingBody(uim, state, dispatch)
     }
 }
 
 @Composable
 private fun ListingBody(
-    uim: ListingUiModel,
-    state: ListingState,
-    dispatch: (AppViewModel.Event) -> Unit
+    uim: ListingUiModel, state: ListingState, dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -337,9 +326,7 @@ private fun ListingBody(
 }
 
 @Composable
-private fun ListingControls(
-    uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit
-) {
+private fun ListingControls(dispatch: (AppViewModel.Event) -> Unit) {
     BackHandler(onBack = {
         dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
     })
@@ -359,17 +346,21 @@ private fun ListingControls(
             )
         }
     }
-    TextField(placeholder = { stringResource(R.string.listing_filter) },
-        value = uim.nameFilter,
+    var filterStr by remember { mutableStateOf("") }
+    TextField(
+        placeholder = { stringResource(R.string.listing_filter) },
+        singleLine = true,
+        value = filterStr,
         modifier = Modifier.fillMaxWidth(),
-        onValueChange = { value: String -> dispatch(AppViewModel.Event.Listing.Filter(value)) })
+        onValueChange = { value: String ->
+            filterStr = value
+            dispatch(AppViewModel.Event.Listing.Filter(value))
+        })
 }
 
 @Composable
 private fun ListingItem(
-    isNewRating: Boolean,
-    itemUim: ListingItemUiModel,
-    dispatch: (AppViewModel.Event) -> Unit
+    isNewRating: Boolean, itemUim: ListingItemUiModel, dispatch: (AppViewModel.Event) -> Unit
 ) {
     if (isNewRating) {
         Text(
