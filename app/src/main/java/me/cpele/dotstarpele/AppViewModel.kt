@@ -270,11 +270,20 @@ private fun setUpListingUimFlow(
 ): Flow<ListingUiModel> =
     listingFilterStrFlow.debounce(500)
         .combine(nameRatingDtosFlow) { filterStr, nameRatingDtos ->
-            filterNames(nameRatingDtos, filterStr)
+            filterNames(nameRatingDtos, filterStr) to filterStr
         }
-        .mapNotNull { nameRatingDtos -> sort(nameRatingDtos) }
-        .map { it.toUiModels() }
-        .map { ListingUiModel(names = it) }
+        .mapNotNull { (nameRatingDtos, filterStr) ->
+            sort(nameRatingDtos) to filterStr
+        }
+        .map { (nameRatingDtos, filterStr) ->
+            nameRatingDtos.toUiModels() to filterStr
+        }
+        .map { (nameRatingUims, filterStr) ->
+            ListingUiModel(
+                names = nameRatingUims,
+                filter = filterStr
+            )
+        }
         .flowOn(Dispatchers.Default)
 
 private fun sort(nameRatingDtos: List<NameRatingDto>) =

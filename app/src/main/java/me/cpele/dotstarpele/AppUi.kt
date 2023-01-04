@@ -88,7 +88,10 @@ sealed interface ProposalUiModel {
     }
 }
 
-data class ListingUiModel(val names: List<ListingItemUiModel> = listOf())
+data class ListingUiModel(
+    val names: List<ListingItemUiModel> = listOf(),
+    val filter: String = ""
+)
 
 inline fun logd(provideMsg: () -> String) {
     val myObject = object : Any() {}
@@ -292,7 +295,7 @@ fun Listing(
     dispatch: (AppViewModel.Event) -> Unit
 ) {
     Column(modifier = modifier.padding(16.dp), Arrangement.spacedBy(16.dp)) {
-        ListingControls(dispatch)
+        ListingControls(uim, dispatch)
         ListingBody(uim, state, dispatch)
     }
 }
@@ -327,7 +330,7 @@ private fun ListingBody(
 }
 
 @Composable
-private fun ListingControls(dispatch: (AppViewModel.Event) -> Unit) {
+private fun ListingControls(uim: ListingUiModel, dispatch: (AppViewModel.Event) -> Unit) {
     BackHandler(onBack = {
         dispatch(AppViewModel.Event.Navigation(AppUiModel.Screen.Home))
     })
@@ -347,7 +350,7 @@ private fun ListingControls(dispatch: (AppViewModel.Event) -> Unit) {
             )
         }
     }
-    var filterStr by rememberSaveable { mutableStateOf("") }
+    var filterStr by rememberSaveable { mutableStateOf(uim.filter) }
     TextField(
         placeholder = { stringResource(R.string.listing_filter) },
         singleLine = true,
