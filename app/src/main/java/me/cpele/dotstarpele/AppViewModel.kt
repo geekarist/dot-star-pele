@@ -1,4 +1,5 @@
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
+@file:OptIn(FlowPreview::class)
 
 package me.cpele.dotstarpele
 
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -266,8 +268,8 @@ private fun setUpListingUimFlow(
     nameRatingDtosFlow: Flow<List<NameRatingDto>>,
     listingFilterStrFlow: Flow<String>
 ): Flow<ListingUiModel> =
-    nameRatingDtosFlow
-        .combine(listingFilterStrFlow) { nameRatingDtos, filterStr ->
+    listingFilterStrFlow.debounce(500)
+        .combine(nameRatingDtosFlow) { filterStr, nameRatingDtos ->
             filterNames(nameRatingDtos, filterStr)
         }
         .mapNotNull { nameRatingDtos -> sort(nameRatingDtos) }
